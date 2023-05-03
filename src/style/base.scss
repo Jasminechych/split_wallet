@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
+
+:root {
+	--brand-color: #A5D9D7;
+	--primary-color: #457B9D;
+	--secondary-color: #9DB4C0;
+	--success-color: #CCD5AE;
+	--warning-color: #FDC686;
+	--danger-color: #E2746F;
+
+	--dark-100: #171725;
+	--dark-90: #44444f;
+	--dark-80: #696974;
+	--dark-70: #92929d;
+	--dark-60: #b5b5be;
+	--dark-50: #d5d5dc;
+	--dark-40: #e2e2ea;
+	--dark-30: #f1f1f5;
+	--dark-20: #fafafb;
+	--dark-0: #ffffff;
+
+	--main-font-family: 'Noto Sans TC', sans-serif;
+	--main-text: #171725;
+
+	--background-color: #ffffff;
+
+	font-size: 16px;
+}
+
+body {
+	background-color: var(--background-color);
+	color: var(--main-text);
+	font-family: var(--main-font-family);
+}
+
+h1 {
+	font-weight: 700;
+	font-size: 68px;
+}
+
+h2 {
+	font-weight: 700;
+	font-size: 42px;
+}
+
+h3 {
+	font-weight: 700;
+	font-size: 28px;
+}
+
+h4 {
+	font-weight: 700;
+	font-size: 24px;
+}
+
+h5 {
+	font-weight: 700;
+	font-size: 18px;
+}
+
+%font-16-regular {
+	font-weight: 400;
+	font-size: 16px;
+}
+
+%font-16-medium {
+	font-weight: 700;
+	font-size: 16px;
+}
+
+%font-14-regular {
+	font-weight: 400;
+	font-size: 14px;
+}
+
+%font-14-medium {
+	font-weight: 500;
+	font-size: 14px;
+}
+
+%font-12-regular {
+	font-weight: 400;
+	font-size: 12px;
+}
+
+%font-12-medium {
+	font-weight: 500;
+	font-size: 12px;
+}
