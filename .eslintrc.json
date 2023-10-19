@@ -23,6 +23,15 @@
     ],
     "rules": {
         "react/react-in-jsx-scope": "off",
+        "react/prop-types": "off",
         "prettier/prettier": ["warn", {"endOfLine": "auto"}]
+        // "space-before-function-paren": ["error", {
+        // "anonymous": "always",
+        // "named": "always",
+        // "asyncArrow": "always"
+        // }],
+        // "prettier": {
+        //     "space-before-function-paren": ["error", "always"]
+        // }
     }
 }

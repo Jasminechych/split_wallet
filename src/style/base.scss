@@ -1,12 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
 
 :root {
-	--brand-color: #A5D9D7;
-	--primary-color: #457B9D;
-	--secondary-color: #9DB4C0;
-	--success-color: #CCD5AE;
-	--warning-color: #FDC686;
-	--danger-color: #E2746F;
+	// --brand-color: #aacfd0;
+	--brand-color: #696974;
+
+	--primary-color: #457b9d;
+	--secondary-color: #9db4c0;
+	--success-color: #ccd5ae;
+	--warning-color: #fdc686;
+	--danger-color: #e2746f;
 
 	--dark-100: #171725;
 	--dark-90: #44444f;
@@ -19,7 +22,7 @@
 	--dark-20: #fafafb;
 	--dark-0: #ffffff;
 
-	--main-font-family: 'Noto Sans TC', sans-serif;
+	--main-font-family: 'Montserrat', 'Noto Sans TC', sans-serif;
 	--main-text: #171725;
 
 	--background-color: #ffffff;
@@ -31,6 +34,18 @@ body {
 	background-color: var(--background-color);
 	color: var(--main-text);
 	font-family: var(--main-font-family);
+	padding: 0 24px;
+}
+
+input {
+	font-family: var(--main-font-family);
+	color: var(--dark-90);
+	font-size: 14px;
+
+	&::placeholder {
+		font-family: var(--main-font-family);
+		color: var(--dark-70);
+	}
 }
 
 h1 {

@@ -1,0 +1,13 @@
+.itemGroup {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 4px;
+	padding-left: 8px;
+	// border-bottom: 1px solid var(--dark-50);
+}
+
+.itemIcons {
+	display: flex;
+	gap: 16px;
+}

@@ -1,0 +1,24 @@
+.inputGroup {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+.inputLabel {
+	padding-left: 8px;
+	margin-bottom: 8px;
+	color: var(--dark-90);
+}
+
+.input {
+	border: none;
+	height: 40px;
+	padding-left: 8px;
+	border-bottom: 1px solid var(--dark-80);
+}
+
+.add {
+	position: absolute;
+	right: 0;
+	bottom: 10px;
+}

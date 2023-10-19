@@ -1,0 +1,44 @@
+.memberList {
+	display: flex;
+	flex-direction: column;
+}
+
+.memberGroup {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 40px;
+	padding: 0 8px;
+	border-bottom: 1px solid var(--dark-80);
+	&:hover {
+		background-color: var(--dark-30);
+	}
+}
+
+.nameWrapper,
+.paymentWrapper {
+	display: inherit;
+	gap: 8px;
+}
+
+.numberInput {
+	width: 84px;
+	border: none;
+	background-color: inherit;
+	text-align: right;
+  font-size: 14px;
+	&::placeholder {
+		text-align: end;
+	}
+}
+
+.unsettled {
+	padding-right: 8px;
+	text-align: right;
+	color: var(--danger-color);
+}
+
+
+.selected {
+  background-color: var(--dark-30);
+}

@@ -69,3 +69,23 @@ input:required {
 input:invalid {
   box-shadow: none;
 }
+
+/* 取消 input type = number 後面的增減按鈕 */
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Firefox */
+input[type=number] {
+  appearance: textfield;
+}
+
+/* 取消 select 預設樣式 */
+/* select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+} */

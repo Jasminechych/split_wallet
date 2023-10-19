@@ -1,0 +1,28 @@
+.itemGroup {
+	display: grid;
+	// justify-content: space-between;
+	// align-items: center;
+	grid-template-columns: auto 1fr auto;
+	grid-template-rows: repeat(2, auto);
+	gap: 4px;
+	padding-left: 8px;
+	border-bottom: 1px solid var(--secondary-color);
+}
+
+.itemTitle {
+	grid-column: 1 / 2;
+	grid-row: 1 / 2;
+}
+
+.itemDate {
+	grid-column: 1 / 2;
+	grid-row: 2 / 3;
+}
+
+.itemIcons {
+	grid-column: 3 / 4;
+	grid-row: 1 / 3;
+	align-items: center;
+	display: flex;
+	gap: 16px;
+}
