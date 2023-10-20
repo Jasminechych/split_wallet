@@ -1,0 +1,17 @@
+[
+  { "key": "United States Dollar", "value": "USD" },
+  { "key": "Taiwan New Dollar", "value": "TWD" },
+  { "key": "Euro", "value": "EUR" },
+  { "key": "Japanese Yen", "value": "JPY" },
+  { "key": "British Pound Sterling", "value": "GBP" },
+  { "key": "Australian Dollar", "value": "AUD" },
+  { "key": "Canadian Dollar", "value": "CAD" },
+  { "key": "Swiss Franc", "value": "CHF" },
+  { "key": "Chinese Yuan", "value": "CNY" },
+  { "key": "Singapore Dollar", "value": "SGD" },
+  { "key": "Hong Kong Dollar", "value": "HKD" },
+  { "key": "South Korean Won", "value": "KRW" },
+  { "key": "Thai Baht", "value": "THB" },
+  { "key": "Philippine Peso", "value": "PHP" },
+  { "key": "Indonesian Rupiah", "value": "IDR" }
+]

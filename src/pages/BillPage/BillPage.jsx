@@ -5,6 +5,7 @@ import { Select } from 'src/components/Select/Select';
 import { Button } from 'src/components/Button/Button';
 import { ExpenseDistribution } from 'src/components/ExpenseDistribution/ExpenseDistribution';
 import { round } from 'src/utils/round';
+import currencyData from 'src/assets/currencyData.json';
 
 const memberData = [
 	{ memberId: '1', memberName: 'AnnaGGGG' },
@@ -246,34 +247,36 @@ function BillPage() {
 			<h2 className={style.pageTitle}>新增消費</h2>
 			<form className={style.pageForm}>
 				<Input
-					groupTitle='消費日期'
+					title='消費日期'
 					type='date'
 					value={billDate}
 					onChange={(e) => handleBillDateChange(e.target.value)}
 				/>
 				<Input
-					groupTitle='品項'
+					title='品項'
 					type='text'
 					placeholder='請輸入品項'
 					value={billTitle}
 					onChange={(e) => handleBillTitleChange(e.target.value)}
 				/>
 				<Input
-					groupTitle='當地消費金額'
+					title='當地消費金額'
 					type='number'
 					placeholder='請輸入當地消費金額'
 					value={localExpense}
 					onChange={(e) => handleLocalExpenseChange(e.target.value)}
+					suffix={<Select optionsData={currencyData} />}
 				/>
 				<Input
-					groupTitle='實際金額 (與匯率擇一填寫)'
+					title='實際金額 (與匯率擇一填寫)'
 					type='number'
 					placeholder='請輸入實際金額'
 					value={actualExpense}
 					onChange={(e) => handleActualExpenseChange(e.target.value)}
+					suffix={<Select optionsData={currencyData} />}
 				/>
 				<Input
-					groupTitle='匯率 (與實際金額擇一填寫)'
+					title='匯率 (與實際金額擇一填寫)'
 					type='number'
 					placeholder='請輸入匯率'
 					value={rate}
@@ -281,10 +284,10 @@ function BillPage() {
 				/>
 				<span>
 					<Select
-						selectTitle='誰付錢'
+						title='誰付錢'
 						optionsData={[
-							{ type: 'single', title: '單人付款' },
-							{ type: 'multiple', title: '多人付款' },
+							{ key: 'single', value: '單人付款' },
+							{ key: 'multiple', value: '多人付款' },
 						]}
 						value={payer}
 						onChange={(e) => handlePayerChange(e.target.value)}
@@ -315,10 +318,10 @@ function BillPage() {
 				</span>
 				<span>
 					<Select
-						selectTitle='分給誰'
+						title='分給誰'
 						optionsData={[
-							{ type: 'equal', title: '平均分攤' },
-							{ type: 'exact', title: '各付各的' },
+							{ key: 'equal', value: '平均分攤' },
+							{ key: 'exact', value: '各付各的' },
 						]}
 						value={split}
 						onChange={(e) => handleSplitChange(e.target.value)}
@@ -345,14 +348,18 @@ function BillPage() {
 					)}
 				</span>
 				<Input
-					groupTitle='稅 / 服務費 (選填)'
+					title='稅 / 服務費 (選填)'
+					type='number'
 					value={tax}
 					onChange={(e) => handleTaxChange(e.target.value)}
+					suffix='%'
 				/>
 				<Input
-					groupTitle='折扣 (選填)'
+					title='折扣 (選填)'
+					type='number'
 					value={discount}
 					onChange={(e) => handleDiscountChange(e.target.value)}
+					suffix='%'
 				/>
 			</form>
 			<Button className={style.pageButton} text='新增' onClick={handleButtonClick} />

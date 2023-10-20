@@ -2,6 +2,7 @@
 	position: relative;
 	display: flex;
 	flex-direction: column;
+	border-bottom: 1px solid var(--dark-80);
 }
 
 .selectLabel {
@@ -11,8 +12,7 @@
 }
 
 .select {
-  border: none;
+	border: none;
 	height: 40px;
 	padding-left: 8px;
-	border-bottom: 1px solid var(--dark-80);
 }

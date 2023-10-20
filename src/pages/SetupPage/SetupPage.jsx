@@ -33,7 +33,7 @@ function SetupPage() {
 			<form className={style.pageForm}>
 				<Input
 					id='groupNameId'
-					groupTitle='群組名稱'
+					title='群組名稱'
 					type='text'
 					placeholder='請輸入群組名稱'
 					value={groupName}
@@ -41,7 +41,7 @@ function SetupPage() {
 				/>
 				<Input
 					id='groupMemberId'
-					groupTitle='群組成員'
+					title='群組成員'
 					type='text'
 					placeholder='請輸入群組成員'
 					value={groupMember}
