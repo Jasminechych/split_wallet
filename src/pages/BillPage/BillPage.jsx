@@ -22,6 +22,8 @@ function BillPage() {
 	const [split, setSplit] = useState('平均分攤');
 	const [payerPayments, setPayerPayments] = useState({});
 	const [splitPayments, setSplitPayments] = useState({});
+	const [tax, setTax] = useState('');
+	const [discount, setDiscount] = useState('');
 
 	const selectedMemberRef = useRef({});
 
@@ -225,6 +227,14 @@ function BillPage() {
 		}
 	}
 
+	function handleTaxChange(value) {
+		setTax(value);
+	}
+
+	function handleDiscountChange(value) {
+		setDiscount(value);
+	}
+
 	// 測試結果用
 	function handleButtonClick() {
 		console.log('payerPayments', payerPayments);
@@ -334,6 +344,16 @@ function BillPage() {
 						/>
 					)}
 				</span>
+				<Input
+					groupTitle='稅 / 服務費 (選填)'
+					value={tax}
+					onChange={(e) => handleTaxChange(e.target.value)}
+				/>
+				<Input
+					groupTitle='折扣 (選填)'
+					value={discount}
+					onChange={(e) => handleDiscountChange(e.target.value)}
+				/>
 			</form>
 			<Button className={style.pageButton} text='新增' onClick={handleButtonClick} />
 		</div>

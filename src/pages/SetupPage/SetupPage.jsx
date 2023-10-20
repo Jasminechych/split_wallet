@@ -1,8 +1,9 @@
-import { Input } from 'src/components/Input/Input';
-import { Button } from 'src/components/Button/Button';
 import style from 'src/pages/SetupPage/SetupPage.module.scss';
 import { useState } from 'react';
+import { Input } from 'src/components/Input/Input';
+import { Button } from 'src/components/Button/Button';
 import { MemberList } from 'src/components/MemberList/MemberList';
+import { Add } from 'src/assets/icons';
 
 function SetupPage() {
 	const [groupName, setGroupName] = useState('');
@@ -45,8 +46,7 @@ function SetupPage() {
 					placeholder='請輸入群組成員'
 					value={groupMember}
 					onChange={(e) => handleGroupMemberChange(e.target.value)}
-					iconAdd={true}
-					onClick={() => handleAddClick(groupMember)}
+					suffix={<Add className={style.add} onClick={() => handleAddClick(groupMember)} />}
 				/>
 			</form>
 
