@@ -43,24 +43,43 @@ function BillPage() {
 	function handleSplitChange(value) {
 		setSplitPayments({});
 		setSplit(value);
+		selectedMemberRef.current = {};
 	}
 
 	function handleLocalExpenseChange(value) {
 		setLocalExpense(value);
 
-		// 如果 splitPayments 裡面有資料，代表使用者已點選過要分帳的成員，當 localExpense 有更新時應該要一併更新 splitPayments 裡面的金額，
-		// 以確保畫面顯示及 splitPayments 的資料是正確同步更新的。
+		// 處理 splitPayments 的 equalSplit 同步更新
 		if (splitPayments !== null && splitPayments !== undefined) {
 			const selectedMemberCount = Object.values(selectedMemberRef.current).filter(
 				(item) => item === true,
 			).length;
+
+			// 計算分帳金額
+			let splitAmount = 0;
+			let remainderAmount = 0;
+			if (value !== 0 && selectedMemberCount !== 0) {
+				splitAmount = round(value / selectedMemberCount, 2);
+
+				if (value - splitAmount * selectedMemberCount !== 0) {
+					remainderAmount = (value - splitAmount * selectedMemberCount).toFixed(2);
+				}
+			}
+
+			// 找到最後一個有被選中的 memberId 做餘額分配
+			const lastSelectedMember = Object.keys(selectedMemberRef.current)[
+				Object.keys(selectedMemberRef.current).length - 1
+			];
 
 			Object.entries(splitPayments).forEach(([id, item]) => {
 				if (item.isSelected === true) {
 					setSplitPayments((prev) => ({
 						...prev,
 						[id]: {
-							amount: round(value / selectedMemberCount, 2),
+							amount:
+								id === lastSelectedMember
+									? (Number(splitAmount) + Number(remainderAmount)).toFixed(2)
+									: round(value / selectedMemberCount, 2),
 							isSelected: true,
 						},
 					}));
@@ -89,7 +108,6 @@ function BillPage() {
 			setRate('');
 			return;
 		}
-
 		// 排除 0.0 幾皆為 0 的狀況
 		const floatValue = parseFloat(value);
 		if (floatValue === 0 || actualExpense === 0 || actualExpense === '') {
@@ -194,7 +212,7 @@ function BillPage() {
 					amount:
 						prev[id] && prev[id].amount !== 0
 							? 0
-							: (Number(splitAmount) + Number(remainderAmount)).toFixed(2), // 如果平均分配除不盡的話將餘額分配給最後一個人
+							: (Number(splitAmount) + Number(remainderAmount)).toFixed(2), // 如果平均分配除不盡的話將餘額分配給最後選到的人
 					isSelected: prev[id] && prev[id].isSelected === true ? false : true,
 				},
 			}));
