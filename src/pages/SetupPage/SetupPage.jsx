@@ -1,7 +1,7 @@
-import style from 'src/pages/SetupPage/SetupPage.module.scss';
 import { useState } from 'react';
+import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
+
 import { Input } from 'src/components/Input/Input';
-import { Button } from 'src/components/Button/Button';
 import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
 import { Select } from 'src/components/Select/Select';
@@ -54,46 +54,39 @@ function SetupPage() {
 	}
 
 	return (
-		<div className={style.page}>
-			<h2 className={style.pageTitle}>建立群組</h2>
-			<form className={style.pageForm}>
-				<Input
-					title='群組名稱'
-					type='text'
-					placeholder='請輸入群組名稱'
-					value={groupName}
-					onChange={(e) => handleGroupNameChange(e.target.value)}
-				/>
-				<Select
-					title='當地消費貨幣'
-					optionsData={currencyData}
-					value={localExpenseCurrency}
-					onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
-				/>
-				<Select
-					title='實際帳單貨幣'
-					optionsData={currencyData}
-					value={actualExpenseCurrency}
-					onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
-				/>
-				<Input
-					title='群組成員'
-					type='text'
-					placeholder='請輸入群組成員'
-					value={groupMember}
-					onChange={(e) => handleGroupMemberChange(e.target.value)}
-					suffix={<Add className={style.add} onClick={() => handleAddClick(groupMember)} />}
-				/>
-			</form>
-
+		<PageTemplate pageTitle='建立群組' pageButtonTitle='建立群組' onClick={handleSubmit}>
+			<Input
+				title='群組名稱'
+				type='text'
+				placeholder='請輸入群組名稱'
+				value={groupName}
+				onChange={(e) => handleGroupNameChange(e.target.value)}
+			/>
+			<Select
+				title='當地消費貨幣'
+				optionsData={currencyData}
+				value={localExpenseCurrency}
+				onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
+			/>
+			<Select
+				title='實際帳單貨幣'
+				optionsData={currencyData}
+				value={actualExpenseCurrency}
+				onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
+			/>
+			<Input
+				title='群組成員'
+				type='text'
+				placeholder='請輸入群組成員'
+				value={groupMember}
+				onChange={(e) => handleGroupMemberChange(e.target.value)}
+				suffix={<Add onClick={() => handleAddClick(groupMember)} />}
+			/>
 			<MemberList
-				className={style.memberGroup}
 				groupMembersInfo={groupMembersInfo}
 				onClick={(member) => handleDeleteMember(member)}
 			/>
-
-			<Button className={style.pageButton} text='建立群組' onClick={handleSubmit} />
-		</div>
+		</PageTemplate>
 	);
 }
 

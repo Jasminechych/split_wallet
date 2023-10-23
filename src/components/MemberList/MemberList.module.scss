@@ -1,0 +1,7 @@
+.memberList {
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+	margin-top: 16px;
+	overflow-y: scroll;
+}

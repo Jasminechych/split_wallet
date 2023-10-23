@@ -1,17 +1,13 @@
-import style from 'src/pages/RecordPage/RecordPage.module.scss';
-import { Button } from 'src/components/Button/Button';
+import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { RecordList } from 'src/components/RecordList/RecordList';
 
 function RecordPage() {
 	return (
-		<div className={style.page}>
-			<h2 className={style.pageTitle}>消費紀錄</h2>
-			<form className={style.pageForm}>
-				<RecordList />
-			</form>
-			<Button className={style.pageButton} text='新增' />
-			<Button className={style.pageButton} text='結算' />
-		</div>
+		<PageTemplate pageTitle='消費紀錄' pageButtonTitle='結算'>
+			<RecordList />
+			{/* <Button className={style.pageButton} text='新增' />
+			<Button className={style.pageButton} text='結算' /> */}
+		</PageTemplate>
 	);
 }
 

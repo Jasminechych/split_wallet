@@ -1,8 +1,9 @@
+import style from 'src/components/MemberList/MemberList.module.scss';
 import { MemberItem } from 'src/components/MemberItem/MemberItem';
 
-function MemberList({ className, groupMembersInfo, onClick }) {
+function MemberList({ groupMembersInfo, onClick }) {
 	return (
-		<div className={className}>
+		<div className={style.memberList}>
 			{groupMembersInfo.map((member) => {
 				return <MemberItem key={member} memberName={member} onClick={onClick} />;
 			})}

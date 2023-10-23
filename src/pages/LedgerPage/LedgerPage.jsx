@@ -1,13 +1,10 @@
-import style from 'src/pages/LedgerPage/LedgerPage.module.scss';
-import { Button } from 'src/components/Button/Button';
+import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 
 function LedgerPage() {
 	return (
-		<div className={style.page}>
-			<h2 className={style.pageTitle}>結算</h2>
-			<form className={style.pageForm}></form>
-			<Button className={style.pageButton} text='新增' />
-		</div>
+		<PageTemplate pageTitle='結算' pageButtonTitle='新增'>
+			<h4>結算的資料</h4>
+		</PageTemplate>
 	);
 }
 
