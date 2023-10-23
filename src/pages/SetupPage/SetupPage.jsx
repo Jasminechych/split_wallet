@@ -4,11 +4,15 @@ import { Input } from 'src/components/Input/Input';
 import { Button } from 'src/components/Button/Button';
 import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
+import { Select } from 'src/components/Select/Select';
+import currencyData from 'src/assets/currencyData.json';
 
 function SetupPage() {
 	const [groupName, setGroupName] = useState('');
 	const [groupMember, setGroupMember] = useState('');
 	const [groupMembersInfo, setGroupMembersInfo] = useState([]);
+	const [localExpenseCurrency, setLocalExpenseCurrency] = useState('');
+	const [actualExpenseCurrency, setActualExpenseCurrency] = useState('');
 
 	console.log(groupMembersInfo);
 
@@ -27,6 +31,16 @@ function SetupPage() {
 		setGroupMember('');
 	}
 
+	function handleLocalExpenseCurrencyChange(value) {
+		setLocalExpenseCurrency(value);
+		console.log('setLocalExpenseCurrency', value);
+	}
+
+	function handleActualExpenseCurrencyChange(value) {
+		setActualExpenseCurrency(value);
+		console.log('setActualExpenseCurrency', value);
+	}
+
 	return (
 		<div className={style.page}>
 			<h2 className={style.pageTitle}>建立群組</h2>
@@ -38,6 +52,18 @@ function SetupPage() {
 					placeholder='請輸入群組名稱'
 					value={groupName}
 					onChange={(e) => handleGroupNameChange(e.target.value)}
+				/>
+				<Select
+					title='選擇當地消費貨幣'
+					optionsData={currencyData}
+					value={localExpenseCurrency}
+					onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
+				/>
+				<Select
+					title='選擇實際結帳貨幣'
+					optionsData={currencyData}
+					value={actualExpenseCurrency}
+					onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
 				/>
 				<Input
 					id='groupMemberId'

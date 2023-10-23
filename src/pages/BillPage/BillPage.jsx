@@ -17,7 +17,9 @@ function BillPage() {
 	const [billDate, setBillDate] = useState('');
 	const [billTitle, setBillTitle] = useState('');
 	const [localExpense, setLocalExpense] = useState('');
+	const [localExpenseCurrency, setLocalExpenseCurrency] = useState('');
 	const [actualExpense, setActualExpense] = useState('');
+	const [actualExpenseCurrency, setActualExpenseCurrency] = useState('');
 	const [rate, setRate] = useState('');
 	const [payer, setPayer] = useState('單人付款');
 	const [split, setSplit] = useState('平均分攤');
@@ -120,6 +122,11 @@ function BillPage() {
 		}
 	}
 
+	function handleLocalExpenseCurrencyChange(value) {
+		setLocalExpenseCurrency(value);
+		console.log('setLocalExpenseCurrency', value);
+	}
+
 	function handleActualExpenseChange(value) {
 		setActualExpense(value);
 
@@ -137,6 +144,11 @@ function BillPage() {
 		} else {
 			setRate(round(localExpense / floatValue, 3));
 		}
+	}
+
+	function handleActualExpenseCurrencyChange(value) {
+		setActualExpenseCurrency(value);
+		console.log('setActualExpenseCurrency', value);
 	}
 
 	function handleRateChange(value) {
@@ -265,15 +277,27 @@ function BillPage() {
 					placeholder='請輸入當地消費金額'
 					value={localExpense}
 					onChange={(e) => handleLocalExpenseChange(e.target.value)}
-					suffix={<Select optionsData={currencyData} />}
+					suffix={
+						<Select
+							optionsData={currencyData}
+							value={localExpenseCurrency}
+							onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
+						/>
+					}
 				/>
 				<Input
-					title='實際金額 (與匯率擇一填寫)'
+					title='實際帳單金額 (與匯率擇一填寫)'
 					type='number'
 					placeholder='請輸入實際金額'
 					value={actualExpense}
 					onChange={(e) => handleActualExpenseChange(e.target.value)}
-					suffix={<Select optionsData={currencyData} />}
+					suffix={
+						<Select
+							optionsData={currencyData}
+							value={actualExpenseCurrency}
+							onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
+						/>
+					}
 				/>
 				<Input
 					title='匯率 (與實際金額擇一填寫)'
@@ -348,17 +372,17 @@ function BillPage() {
 					)}
 				</span>
 				<Input
-					title='稅 / 服務費 (選填)'
-					type='number'
-					value={tax}
-					onChange={(e) => handleTaxChange(e.target.value)}
-					suffix='%'
-				/>
-				<Input
 					title='折扣 (選填)'
 					type='number'
 					value={discount}
 					onChange={(e) => handleDiscountChange(e.target.value)}
+					suffix='%'
+				/>
+				<Input
+					title='稅 / 服務費 (選填)'
+					type='number'
+					value={tax}
+					onChange={(e) => handleTaxChange(e.target.value)}
 					suffix='%'
 				/>
 			</form>
