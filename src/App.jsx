@@ -1,15 +1,18 @@
 import 'src/style/reset.css';
 import 'src/style/base.scss';
-import { SetupPage } from 'src/pages';
-// import { RecordPage } from 'src/pages/RecordPage/RecordPage';
-import { BillPage } from './pages/BillPage/BillPage';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { SetupPage, RecordPage, BillPage } from 'src/pages';
 
 function App() {
 	return (
 		<div className='App'>
-			<SetupPage />
-			{/* <RecordPage /> */}
-			<BillPage />
+			<BrowserRouter>
+				<Routes>
+					<Route path='/' element={<SetupPage />} />
+					<Route path='record' element={<RecordPage />} />
+					<Route path='bill' element={<BillPage />} />
+				</Routes>
+			</BrowserRouter>
 		</div>
 	);
 }
