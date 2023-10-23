@@ -1,15 +1,15 @@
 import style from 'src/components/Input/Input.module.scss';
 
-function Input({ id, title, type, placeholder, value, onChange, suffix }) {
+function Input({ title, type, placeholder, value, onChange, suffix }) {
 	return (
 		<div className={style.inputGroup}>
-			<label htmlFor={id} className={style.inputLabel}>
+			<label htmlFor={title} className={style.inputLabel}>
 				{title}
 			</label>
 			<div className={style.inputWrapper}>
 				<input
 					className={style.input}
-					id={id}
+					id={title}
 					type={type}
 					placeholder={placeholder}
 					value={value}

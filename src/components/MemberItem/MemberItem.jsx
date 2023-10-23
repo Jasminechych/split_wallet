@@ -1,21 +1,12 @@
 import style from 'src/components/MemberItem/MemberItem.module.scss';
-import { Ellipsis, Edit, Delete } from 'src/assets/icons';
-import { useState } from 'react';
+import { Close } from 'src/assets/icons';
 
-function MemberItem({ memberName }) {
-	const [isEllipsisClick, setIsEllipsisClick] = useState(false);
-
-	function handleEllipsisClick() {
-		setIsEllipsisClick(!isEllipsisClick);
-	}
-
+function MemberItem({ memberName, onClick }) {
 	return (
-		<div className={style.itemGroup}>
-			<h4>{memberName}</h4>
+		<div className={style.itemGroup} id={memberName}>
+			<h5>{memberName}</h5>
 			<div className={style.itemIcons}>
-				{isEllipsisClick && <Edit />}
-				{isEllipsisClick && <Delete />}
-				<Ellipsis onClick={handleEllipsisClick} />
+				<Close onClick={() => onClick(memberName)} />
 			</div>
 		</div>
 	);

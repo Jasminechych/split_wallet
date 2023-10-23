@@ -25,8 +25,8 @@ function BillPage() {
 	const [split, setSplit] = useState('平均分攤');
 	const [payerPayments, setPayerPayments] = useState({});
 	const [splitPayments, setSplitPayments] = useState({});
-	const [tax, setTax] = useState('');
-	const [discount, setDiscount] = useState('');
+	// const [tax, setTax] = useState('');
+	// const [discount, setDiscount] = useState('');
 
 	const selectedMemberRef = useRef({});
 
@@ -240,13 +240,13 @@ function BillPage() {
 		}
 	}
 
-	function handleTaxChange(value) {
-		setTax(value);
-	}
+	// function handleTaxChange(value) {
+	// 	setTax(value);
+	// }
 
-	function handleDiscountChange(value) {
-		setDiscount(value);
-	}
+	// function handleDiscountChange(value) {
+	// 	setDiscount(value);
+	// }
 
 	// 測試結果用
 	function handleButtonClick() {
@@ -371,20 +371,33 @@ function BillPage() {
 						/>
 					)}
 				</span>
-				<Input
+				{/* 待確認 */}
+				{/* <Input
 					title='折扣 (選填)'
 					type='number'
 					value={discount}
 					onChange={(e) => handleDiscountChange(e.target.value)}
 					suffix='%'
-				/>
-				<Input
+				/> */}
+				{/* 試算待刪除 */}
+				{/* <p>
+					折扣金額 {Number(localExpense) * discount * 0.01} 折扣後總金額{' '}
+					{Number(localExpense) - Number(localExpense) * discount * 0.01}
+				</p> */}
+				{/* <Input
 					title='稅 / 服務費 (選填)'
 					type='number'
 					value={tax}
 					onChange={(e) => handleTaxChange(e.target.value)}
 					suffix='%'
-				/>
+				/> */}
+				{/* <p>
+					稅金 {(Number(localExpense) - Number(localExpense) * discount * 0.01) * tax * 0.01}{' '}
+					含稅後總金額{' '}
+					{Number(localExpense) -
+						Number(localExpense) * discount * 0.01 +
+						(Number(localExpense) - Number(localExpense) * discount * 0.01) * tax * 0.01}
+				</p> */}
 			</form>
 			<Button className={style.pageButton} text='新增' onClick={handleButtonClick} />
 		</div>

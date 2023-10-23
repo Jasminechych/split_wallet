@@ -1,6 +1,6 @@
 [
-  { "key": "United States Dollar", "value": "USD" },
   { "key": "Taiwan New Dollar", "value": "TWD" },
+  { "key": "United States Dollar", "value": "USD" },
   { "key": "Euro", "value": "EUR" },
   { "key": "Japanese Yen", "value": "JPY" },
   { "key": "British Pound Sterling", "value": "GBP" },
