@@ -1,0 +1,26 @@
+.navbarList {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	gap: 32px;
+	padding: 0 24px;
+	text-align: center;
+	margin-top: 120px;
+}
+
+.navItem {
+	width: 100%;
+	color: var(--main-text);
+  cursor: pointer;
+
+	&:hover {
+		color: var(--brand-color);
+	}
+}
+
+.navItemActive {
+	width: 100%;
+	color: var(--brand-color);
+	border-bottom: 1px solid var(--brand-color);
+}
