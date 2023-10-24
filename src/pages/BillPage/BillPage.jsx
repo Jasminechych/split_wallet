@@ -280,6 +280,7 @@ function BillPage() {
 						optionsData={currencyData}
 						value={localExpenseCurrency}
 						onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
+						className='suffix'
 					/>
 				}
 			/>
@@ -294,6 +295,7 @@ function BillPage() {
 						optionsData={currencyData}
 						value={actualExpenseCurrency}
 						onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
+						className='suffix'
 					/>
 				}
 			/>

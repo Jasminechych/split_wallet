@@ -83,9 +83,9 @@ input[type=number] {
 }
 
 /* 取消 select 預設樣式 */
-/* select {
+select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   background-color: transparent;
-} */
+}
