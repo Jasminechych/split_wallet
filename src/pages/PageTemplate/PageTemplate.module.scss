@@ -79,6 +79,17 @@
 	border-radius: 25px;
 }
 
+.setupPageMain {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	max-width: 500px;
+	height: 100%;
+	margin: 0 auto;
+	padding: 0 24px;
+	background-color: var(--dark-0);
+}
+
 .pageTitle {
 	height: 120px;
 	text-align: center;
@@ -154,5 +165,9 @@
 	.pageMain {
 		background-color: var(--dark-0);
 		border-radius: 25px;
+	}
+
+	.setupPageMain, body {
+		background-color: var(--dark-0);
 	}
 }

@@ -37,6 +37,9 @@
 	padding-left: 8px;
 	margin-bottom: 8px;
 	color: var(--dark-90);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .select {

@@ -80,7 +80,7 @@ function SetupPage() {
 				placeholder='請輸入群組成員'
 				value={groupMember}
 				onChange={(e) => handleGroupMemberChange(e.target.value)}
-				suffix={<Add onClick={() => handleAddClick(groupMember)} />}
+				suffix={<Add cursor='pointer' onClick={() => handleAddClick(groupMember)} />}
 			/>
 			<MemberList
 				groupMembersInfo={groupMembersInfo}
