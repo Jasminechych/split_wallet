@@ -1,0 +1,38 @@
+.billPage {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	row-gap: 32px;
+}
+
+.billDate,
+.billTitle,
+.localExpense,
+.actualExpense,
+.rate,
+.payer,
+.split,
+.expenseDistribution {
+	grid-column: 1 / 3;
+}
+
+@media screen and (min-width: 992px) {
+	.billPage {
+		column-gap: 24px;
+    row-gap: 56px;
+	}
+
+	.billDate,
+	.localExpense,
+	.rate,
+	.payer,
+	.expenseDistributionForPayer {
+		grid-column: 1 / 2;
+	}
+
+	.billTitle,
+	.actualExpense,
+	.split,
+	.expenseDistributionForSplit {
+		grid-column: 2 / 3;
+	}
+}

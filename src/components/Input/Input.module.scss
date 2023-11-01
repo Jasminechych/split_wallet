@@ -1,14 +1,17 @@
 .inputGroup {
-	position: relative;
 	display: flex;
 	flex-direction: column;
-	border-bottom: 1px solid var(--dark-80);
+	width: 100%;
+	border-bottom: var(--border-bottom-primary);
 }
 
 .inputLabel {
 	padding-left: 8px;
 	margin-bottom: 8px;
 	color: var(--dark-90);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .input {

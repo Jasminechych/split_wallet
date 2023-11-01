@@ -9,7 +9,7 @@ const navbarList = [
 
 function NavbarList() {
 	return (
-		<div className={style.navbarList}>
+		<nav className={style.navbarList}>
 			{navbarList.map(({ key, value }) => {
 				return (
 					<NavLink
@@ -27,7 +27,7 @@ function NavbarList() {
 				}}>
 				複製連結
 			</p>
-		</div>
+		</nav>
 	);
 }
 

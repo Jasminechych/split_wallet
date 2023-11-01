@@ -11,21 +11,24 @@ function PageTemplate({ children, pageTitle, pageButtonTitle, onClick }) {
 	return (
 		<div className={style.page}>
 			{pathname !== '/' && (
-				<>
+				<aside>
 					<input id='hamburger' type='checkbox' className={style.toggleHamburgerInput} />
 					<label htmlFor='hamburger' className={style.toggleHamburgerLabel}>
 						<span className={style.hamburger}></span>
 						<span className={style.hamburger}></span>
 						<span className={style.hamburger}></span>
 					</label>
-					<nav className={style.pageNavbar}>
+					<div className={style.pageNavbar}>
 						<NavbarList />
-					</nav>
-				</>
+					</div>
+				</aside>
 			)}
-			<h2 className={style.pageTitle}>{pageTitle}</h2>
-			<main className={style.pageContent}>{children}</main>
-			<Button className={style.pageButton} text={pageButtonTitle} onClick={onClick} />
+
+			<main className={style.pageMain}>
+				<h2 className={style.pageTitle}>{pageTitle}</h2>
+				<section className={style.mainSection}>{children}</section>
+				<Button className={style.pageButton} text={pageButtonTitle} onClick={onClick} />
+			</main>
 		</div>
 	);
 }

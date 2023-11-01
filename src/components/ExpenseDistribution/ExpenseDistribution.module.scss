@@ -1,6 +1,7 @@
 .memberList {
 	display: flex;
 	flex-direction: column;
+	width: 100%;
 }
 
 .memberGroup {
@@ -9,8 +10,10 @@
 	align-items: center;
 	height: 40px;
 	padding: 0 8px;
-	border-bottom: 1px solid var(--dark-80);
 	font-size: 14px;
+	border-bottom: var(--border-bottom-secondary);
+	background-color: var(--dark-20);
+
 	&:hover {
 		background-color: var(--dark-30);
 	}
@@ -27,7 +30,7 @@
 	border: none;
 	background-color: inherit;
 	text-align: right;
-  font-size: 14px;
+	font-size: 14px;
 	&::placeholder {
 		text-align: end;
 	}
@@ -39,7 +42,6 @@
 	color: var(--danger-color);
 }
 
-
 .selected {
-  background-color: var(--dark-30);
+	background-color: var(--dark-30);
 }

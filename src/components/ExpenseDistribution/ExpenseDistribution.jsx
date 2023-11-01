@@ -4,6 +4,7 @@ import style from 'src/components/ExpenseDistribution/ExpenseDistribution.module
 // import { round } from 'src/utils/round';
 
 function ExpenseDistribution({
+	className,
 	inputType,
 	inputName,
 	memberData,
@@ -30,7 +31,7 @@ function ExpenseDistribution({
 	}
 
 	return (
-		<div className={style.memberList}>
+		<div className={`${className} ${style.memberList}`}>
 			{memberData.map(({ memberId, memberName }) => {
 				return (
 					<Fragment key={memberId}>

@@ -1,14 +1,15 @@
 .page {
 	display: flex;
-	flex-direction: column;
+	width: 100vw;
 	height: 100vh;
+	overflow-x: hidden;
 }
 
 .toggleHamburgerLabel {
 	position: absolute;
 	top: calc(120px / 2);
 	left: 24px;
-  transform: translateY(-20.5px);
+	transform: translateY(-20.5px);
 	z-index: 2;
 	cursor: pointer;
 }
@@ -16,7 +17,7 @@
 .hamburger {
 	width: 30px;
 	height: 3px;
-	background-color: var(--brand-color);
+	background-color: var(--dark-70);
 	display: block;
 	margin: 8px auto;
 	-webkit-transition: all 0.3s ease-in-out;
@@ -46,44 +47,112 @@
 		}
 
 		& ~ .pageNavbar {
-			background-color: var(--background-color);
+			width: 70vw;
+			max-width: 300px;
 			transform: scale(1, 1);
 			transform-origin: left;
 			transition: transform 0.5s ease-in-out;
-			opacity: 1;
-			transition: opacity 0.3s ease-out;
 		}
 	}
 }
 
 .pageNavbar {
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 1;
-	width: 100%;
+	display: flex;
+	flex-direction: column;
+	width: 0;
 	height: 100%;
+	border-radius: 0 25px 25px 0;
+	background-color: var(--dark-20);
 	transform: scale(0, 1);
 	transform-origin: left;
 	transition: transform 0.5s ease-in-out;
-	opacity: 0;
-	transition: opacity 0.3s ease-out;
+}
+
+.pageMain {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	width: 100%;
+	height: 100%;
+	padding: 0 24px;
+	background-color: var(--dark-0);
+	border-radius: 25px;
 }
 
 .pageTitle {
 	height: 120px;
 	text-align: center;
-  line-height: 120px;
+	line-height: 120px;
+	overflow-x: hidden;
 }
 
-.pageContent {
+.mainSection {
 	display: flex;
 	flex-direction: column;
-	height: calc(100vh - 32px * 4);
+	flex: 1;
 	gap: 32px;
+	// height: calc(100% - 240px);
 	overflow-y: scroll;
 }
 
 .pageButton {
 	margin: 32px auto;
+}
+
+// Small devices (landscape phones, 576px and up)
+@media screen and (min-width: 576px) {
+	.toggleHamburgerLabel {
+		display: none;
+	}
+
+	.pageNavbar {
+		width: 40vw;
+		max-width: 200px;
+		transform: scale(1, 1);
+	}
+}
+
+// Medium devices (tablets, 768px and up)
+@media screen and (min-width: 768px) {
+	.pageNavbar {
+		width: 60vw;
+		max-width: 250px;
+	}
+
+	.pageTitle {
+		height: 100px;
+		line-height: 100px;
+	}
+
+	.pageButton {
+		margin: 24px auto;
+	}
+}
+
+// Large devices (desktops, 992px and up)
+@media screen and (min-width: 992px) {
+	.pageNavbar {
+		width: 70vw;
+	}
+
+	.pageMain {
+		padding: 0 48px;
+	}
+}
+
+// X-Large devices (large desktops, 1200px and up)
+@media screen and (min-width: 1200px) {
+	.page {
+		max-width: 1100px;
+		margin: 0 auto;
+	}
+
+	body {
+		background-color: var(--dark-20);
+	}
+
+	.pageMain {
+		background-color: var(--dark-0);
+		border-radius: 25px;
+	}
 }

@@ -1,8 +1,8 @@
 import style from 'src/components/Input/Input.module.scss';
 
-function Input({ title, type, placeholder, value, onChange, suffix }) {
+function Input({ className, title, type, placeholder, value, onChange, suffix }) {
 	return (
-		<div className={style.inputGroup}>
+		<div className={`${className} ${style.inputGroup}`}>
 			<label htmlFor={title} className={style.inputLabel}>
 				{title}
 			</label>

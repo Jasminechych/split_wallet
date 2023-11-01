@@ -1,22 +1,28 @@
 .itemGroup {
 	display: grid;
-	// justify-content: space-between;
-	// align-items: center;
 	grid-template-columns: auto 1fr auto;
 	grid-template-rows: repeat(2, auto);
 	gap: 4px;
+	width: 100%;
 	padding-left: 8px;
-	border-bottom: 1px solid var(--secondary-color);
+	border-bottom: var(--border-bottom-primary);
+
+	&:hover {
+		background-color: var(--dark-20);
+	}
 }
 
 .itemTitle {
 	grid-column: 1 / 2;
 	grid-row: 1 / 2;
+	padding: 12px 0 4px 0;
 }
 
 .itemDate {
 	grid-column: 1 / 2;
 	grid-row: 2 / 3;
+	color: var(--dark-80);
+	font-size: 12px;
 }
 
 .itemIcons {
@@ -25,4 +31,5 @@
 	align-items: center;
 	display: flex;
 	gap: 16px;
+	cursor: pointer;
 }

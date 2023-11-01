@@ -1,17 +1,29 @@
 .selectGroup {
 	display: flex;
 	flex-direction: column;
-	border-bottom: 1px solid var(--dark-80);
+	width: 100%;
 }
 
-.selectGroupSuffix {
+.suffixWrapper {
+	position: relative;
 	display: flex;
 	flex-direction: column;
-	width: 80px;
+	align-self: flex-end;
+	width: 70px;
+
+	&::after {
+		content: '\25BE';
+		position: absolute;
+		top: 50%;
+		right: 8px;
+		transform: translateY(-50%);
+	}
 }
 
 .selectWrapper {
 	position: relative;
+	border-bottom: var(--border-bottom-primary);
+
 	&::after {
 		content: '\25BE';
 		position: absolute;

@@ -1,6 +1,13 @@
 .expensesList {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 24px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+  align-items: center;
+	// gap: 16px;
+	width: 100%;
+  overflow-y: scroll;
+}
+
+.emptyContent {
+	color: var(--dark-80);
 }
