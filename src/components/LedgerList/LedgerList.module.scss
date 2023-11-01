@@ -1,0 +1,18 @@
+.ledgerList {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	width: 100%;
+	overflow-y: scroll;
+}
+
+.ledgerItem {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+  height: 48px;
+	padding-left: 8px;
+	border-bottom: var(--border-bottom-primary);
+}

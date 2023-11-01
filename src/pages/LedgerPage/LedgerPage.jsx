@@ -1,5 +1,6 @@
-import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { useNavigate } from 'react-router-dom';
+import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
+import { LedgerList } from 'src/components/LedgerList/LedgerList';
 
 function LedgerPage() {
 	const navigate = useNavigate();
@@ -10,7 +11,7 @@ function LedgerPage() {
 
 	return (
 		<PageTemplate pageTitle='結算' pageButtonTitle='新增消費' onClick={handleClick}>
-			<h4>結算的資料</h4>
+			<LedgerList />
 		</PageTemplate>
 	);
 }
