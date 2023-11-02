@@ -1,0 +1,37 @@
+.page {
+	display: flex;
+	width: 100vw;
+	height: 100vh;
+	overflow-x: hidden;
+	background-color: var(--dark-0);
+}
+
+.pageMain {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	max-width: 500px;
+	height: 100%;
+	margin: 0 auto;
+	padding: 0 24px;
+	background-color: var(--dark-0);
+}
+
+.pageTitle {
+	height: 120px;
+	text-align: center;
+	line-height: 120px;
+	overflow-x: hidden;
+}
+
+.mainSection {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	gap: 32px;
+	overflow-y: scroll;
+}
+
+.pageButton {
+	margin: 32px auto;
+}

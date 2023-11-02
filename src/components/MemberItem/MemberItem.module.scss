@@ -2,11 +2,10 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	gap: 4px;
+	height: 36px;
 	padding-left: 8px;
-}
 
-.itemIcons {
-	display: flex;
-	gap: 16px;
+	&:hover {
+		background-color: var(--dark-30);
+	}
 }
