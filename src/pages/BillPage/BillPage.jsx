@@ -1,11 +1,11 @@
 import style from 'src/pages/BillPage/BillPage.module.scss';
 import { useState, useRef } from 'react';
 import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
-
 import { Input } from 'src/components/Input/Input';
 import { Select } from 'src/components/Select/Select';
 import { ExpenseDistribution } from 'src/components/ExpenseDistribution/ExpenseDistribution';
 import { round } from 'src/utils/round';
+import { useGroupInfo } from 'src/context/GroupInfoContext';
 import currencyData from 'src/assets/currencyData.json';
 
 const memberData = [
@@ -30,8 +30,10 @@ function BillPage() {
 	// const [discount, setDiscount] = useState('');
 
 	const selectedMemberRef = useRef({});
+	const { groupInfo } = useGroupInfo();
 
 	console.log('渲染 BillPage');
+	console.log('groupInfo', groupInfo);
 
 	function handleBillDateChange(value) {
 		setBillDate(value);

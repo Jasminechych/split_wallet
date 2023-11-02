@@ -1,10 +1,12 @@
 import style from 'src/pages/SetupPage/SetupPage.module.scss';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from 'src/components/Button/Button';
 import { Input } from 'src/components/Input/Input';
 import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
 import { Select } from 'src/components/Select/Select';
+import { useGroupInfo } from 'src/context/GroupInfoContext';
 import currencyData from 'src/assets/currencyData.json';
 
 function SetupPage() {
@@ -14,6 +16,9 @@ function SetupPage() {
 	const [localExpenseCurrency, setLocalExpenseCurrency] = useState('TWD');
 	const [actualExpenseCurrency, setActualExpenseCurrency] = useState('TWD');
 	const [errors, setErrors] = useState({});
+
+	const { handleGroupInfoChange } = useGroupInfo();
+	const navigate = useNavigate();
 
 	function handleGroupNameChange(e) {
 		setGroupName(e);
@@ -100,16 +105,15 @@ function SetupPage() {
 
 		if (groupName === '' || !groupMembersList.length) return;
 
-		console.log(
-			'groupName:',
-			groupName,
-			'groupMembersList:',
-			groupMembersList,
-			'localExpenseCurrency:',
-			localExpenseCurrency,
-			'actualExpenseCurrency:',
-			actualExpenseCurrency,
-		);
+		console.log('execute');
+		handleGroupInfoChange({
+			groupName: groupName,
+			groupMembersList: groupMembersList,
+			localExpenseCurrency: localExpenseCurrency,
+			actualExpenseCurrency: actualExpenseCurrency,
+		});
+
+		navigate('/bill');
 	}
 
 	return (
