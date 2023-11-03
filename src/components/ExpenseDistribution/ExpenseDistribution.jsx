@@ -12,7 +12,7 @@ function ExpenseDistribution({
 	payments,
 	onPaymentsChange,
 }) {
-	console.log('渲染 ExpenseDistribution');
+	// console.log('渲染 ExpenseDistribution');
 
 	//  計算未分配金額
 	let unSettledAmount = localExpense;

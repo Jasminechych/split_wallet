@@ -1,5 +1,5 @@
 import style from 'src/pages/BillPage/BillPage.module.scss';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { Input } from 'src/components/Input/Input';
 import { Select } from 'src/components/Select/Select';
@@ -26,14 +26,22 @@ function BillPage() {
 	const [split, setSplit] = useState('平均分攤');
 	const [payerPayments, setPayerPayments] = useState({});
 	const [splitPayments, setSplitPayments] = useState({});
-	// const [tax, setTax] = useState('');
-	// const [discount, setDiscount] = useState('');
 
 	const selectedMemberRef = useRef({});
 	const { groupInfo } = useGroupInfo();
 
 	console.log('渲染 BillPage');
 	console.log('groupInfo', groupInfo);
+
+	useEffect(() => {
+		// 初始化資料格式
+		const data = {};
+		memberData.map(({ memberId }) => {
+			data[memberId] = { amount: 0, isSelected: false };
+		});
+		setPayerPayments(data);
+		setSplitPayments(data);
+	}, []);
 
 	function handleBillDateChange(value) {
 		setBillDate(value);
@@ -44,7 +52,13 @@ function BillPage() {
 	}
 
 	function handlePayerChange(value) {
-		setPayerPayments({});
+		setPayerPayments((prev) => {
+			const updatedPayments = Object.keys(prev).reduce((acc, key) => {
+				acc[key] = { amount: 0, isSelected: false };
+				return acc;
+			}, {});
+			return updatedPayments;
+		});
 		setPayer(value);
 	}
 
@@ -174,19 +188,21 @@ function BillPage() {
 	}
 
 	function handlePayerPaymentChange(id, value, type) {
-		let updatedPayments;
-
 		if (type === 'radio') {
-			updatedPayments = {
-				[id]: { amount: round(localExpense, 2), isSelected: true },
-			};
+			setPayerPayments((prev) => {
+				const updatedPayments = Object.keys(prev).reduce((acc, key) => {
+					acc[key] = { amount: 0, isSelected: false };
+					return acc;
+				}, {});
+				updatedPayments[id] = { amount: round(localExpense, 2), isSelected: true };
+				return updatedPayments;
+			});
 		} else {
-			updatedPayments = {
-				...payerPayments,
+			setPayerPayments((prev) => ({
+				...prev,
 				[id]: { amount: round(value, 2) || 0, isSelected: false },
-			};
+			}));
 		}
-		setPayerPayments(updatedPayments);
 	}
 
 	function handleSplitPaymentChange(id, value, type) {
@@ -243,18 +259,49 @@ function BillPage() {
 		}
 	}
 
-	// function handleTaxChange(value) {
-	// 	setTax(value);
-	// }
-
-	// function handleDiscountChange(value) {
-	// 	setDiscount(value);
-	// }
-
 	// 測試結果用
 	function handleButtonClick() {
+		// console.log('billDate', billDate);
+		// console.log('billTitle', billTitle);
+		// console.log('localExpense', localExpense);
+		// console.log('localExpenseCurrency', localExpenseCurrency);
+		// console.log('actualExpense', actualExpense);
+		// console.log('actualExpenseCurrency', actualExpenseCurrency);
+		// console.log('rate', rate);
+		// console.log('payer', payer);
+		// console.log('split', split);
 		console.log('payerPayments', payerPayments);
 		console.log('splitPayments', splitPayments);
+
+		const debts = {};
+		for (const payerId in payerPayments) {
+			for (const splitId in splitPayments) {
+				// 分帳金額	> 0 && 該付的大於支出的 才有可能欠別人錢
+				if (
+					splitId !== payerId &&
+					splitPayments[splitId].amount > 0 &&
+					splitPayments[splitId].amount - payerPayments[splitId].amount > 0
+				) {
+					// 表示我總共欠大家的錢
+					const shortage = splitPayments[splitId].amount - payerPayments[splitId].amount;
+					// 如果他的付款金額 > 分帳金額，表示我可能人欠他錢
+					if (payerPayments[payerId].amount - splitPayments[payerId].amount > 0) {
+						// 表示他被欠的錢
+						const debt = payerPayments[payerId].amount - splitPayments[payerId].amount;
+						debts[splitId] = debts[splitId] || {};
+						// 如果他被欠的錢大於我總共欠的錢，我就是欠他我全部欠的錢
+						if (debt >= shortage) {
+							debts[splitId][payerId] = shortage;
+						} else {
+							// 如果他被欠的錢小於我總共欠的錢，我就是欠他他被欠的錢
+							debts[splitId][payerId] = debt;
+						}
+					}
+				}
+			}
+		}
+
+		console.log('debts', debts);
 	}
 
 	return (
@@ -382,34 +429,6 @@ function BillPage() {
 						/>
 					)}
 				</Select>
-
-				{/* 待確認 */}
-				{/* <Input
-					title='折扣 (選填)'
-					type='number'
-					value={discount}
-					onChange={(e) => handleDiscountChange(e.target.value)}
-					suffix='%'
-				/> */}
-				{/* 試算待刪除 */}
-				{/* <p>
-					折扣金額 {Number(localExpense) * discount * 0.01} 折扣後總金額{' '}
-					{Number(localExpense) - Number(localExpense) * discount * 0.01}
-				</p> */}
-				{/* <Input
-					title='稅 / 服務費 (選填)'
-					type='number'
-					value={tax}
-					onChange={(e) => handleTaxChange(e.target.value)}
-					suffix='%'
-				/> */}
-				{/* <p>
-					稅金 {(Number(localExpense) - Number(localExpense) * discount * 0.01) * tax * 0.01}{' '}
-					含稅後總金額{' '}
-					{Number(localExpense) -
-						Number(localExpense) * discount * 0.01 +
-						(Number(localExpense) - Number(localExpense) * discount * 0.01) * tax * 0.01}
-				</p> */}
 			</div>
 		</PageTemplate>
 	);

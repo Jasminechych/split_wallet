@@ -102,11 +102,11 @@
 	flex-direction: column;
 	flex: 1;
 	gap: 32px;
-	// height: calc(100% - 240px);
 	overflow-y: scroll;
 }
 
 .pageButton {
+	max-width: 400px;
 	margin: 32px auto;
 }
 
