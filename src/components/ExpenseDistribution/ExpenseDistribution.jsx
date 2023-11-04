@@ -11,6 +11,7 @@ function ExpenseDistribution({
 	localExpense,
 	payments,
 	onPaymentsChange,
+	error,
 }) {
 	// console.log('渲染 ExpenseDistribution');
 
@@ -35,41 +36,43 @@ function ExpenseDistribution({
 			{memberData.map(({ memberId, memberName }) => {
 				return (
 					<Fragment key={memberId}>
-						{/* 顯示成員名稱後輸入框 */}
-						{inputType === 'radio' && (
-							<div
-								className={`${style.memberGroup} ${
-									payments[memberId] && payments[memberId].isSelected === true ? style.selected : ''
-								}`}
-								key={memberId}>
-								<div className={style.nameWrapper}>
-									<input
-										id={`${memberId}_${inputName}`}
-										type={inputType}
-										name={inputName}
-										onChange={() => onPaymentsChange(memberId, localExpense, inputType)}
-									/>
-									<label htmlFor={`${memberId}_${inputName}`}>{memberName}</label>
-								</div>
-								<div className={style.paymentWrapper}>
-									<p>$</p>
-									<p className={style.numberInput} name={inputName}>
-										{payments[memberId] && payments[memberId].isSelected === true
-											? payments[memberId].amount
-											: '0.00'}
-									</p>
-								</div>
+						{(inputName === 'singlePayer' || inputName === 'equalSplit') && (
+							<div key={memberId}>
+								<label
+									htmlFor={`${memberId}_${inputName}`}
+									className={`${style.memberGroup} ${
+										payments[memberId] && payments[memberId].isSelected === true
+											? style.selected
+											: ''
+									}`}>
+									<div className={style.nameWrapper}>
+										<input
+											id={`${memberId}_${inputName}`}
+											type={inputType}
+											name={inputName}
+											onChange={() => onPaymentsChange(memberId, localExpense, inputName)}
+										/>
+										{memberName}
+									</div>
+									<div className={style.paymentWrapper}>
+										<p>$</p>
+										<p className={style.numberInput}>
+											{payments[memberId] && payments[memberId].isSelected === true
+												? payments[memberId].amount
+												: '0'}
+										</p>
+									</div>
+								</label>
 							</div>
 						)}
 						{(inputName === 'multiplePayer' || inputName === 'exactSplit') && (
 							<div
+								key={memberId}
 								className={`${style.memberGroup} ${
 									payments[memberId] && payments[memberId].isSelected === true ? style.selected : ''
-								}`}
-								key={memberId}>
+								}`}>
 								<div className={style.nameWrapper}>
-									<input id={`${memberId}_${inputName}`} type={inputType} name={inputName} />
-									<label htmlFor={`${memberId}_${inputName}`}>{memberName}</label>
+									<p>{memberName}</p>
 								</div>
 								<div className={style.paymentWrapper}>
 									<p>$</p>
@@ -77,34 +80,9 @@ function ExpenseDistribution({
 										className={style.numberInput}
 										type='number'
 										name={inputName}
-										placeholder='0.00'
+										placeholder='0'
 										onChange={(e) => onPaymentsChange(memberId, e.target.value, inputType)}
 									/>
-								</div>
-							</div>
-						)}
-						{inputName === 'equalSplit' && (
-							<div
-								className={`${style.memberGroup} ${
-									payments[memberId] && payments[memberId].isSelected === true ? style.selected : ''
-								}`}
-								key={memberId}>
-								<div className={style.nameWrapper}>
-									<input
-										id={`${memberId}_${inputName}`}
-										type={inputType}
-										name={inputName}
-										onClick={() => onPaymentsChange(memberId, localExpense, 'equalSplit')}
-									/>
-									<label htmlFor={`${memberId}_${inputName}`}>{memberName}</label>
-								</div>
-								<div className={style.paymentWrapper}>
-									<p>$</p>
-									<p className={style.numberInput}>
-										{payments[memberId] && payments[memberId].isSelected === true
-											? payments[memberId].amount
-											: '0.00'}
-									</p>
 								</div>
 							</div>
 						)}
@@ -117,6 +95,7 @@ function ExpenseDistribution({
 					{sum > localExpense ? '超付金額' : '未分配金額'} {unSettledAmount}
 				</p>
 			)}
+			<p className={style.errorMessage}>{error ? error : ''}</p>
 		</div>
 	);
 }

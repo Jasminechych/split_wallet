@@ -26,6 +26,7 @@ function BillPage() {
 	const [split, setSplit] = useState('平均分攤');
 	const [payerPayments, setPayerPayments] = useState({});
 	const [splitPayments, setSplitPayments] = useState({});
+	const [errors, setErrors] = useState({});
 
 	const selectedMemberRef = useRef({});
 	const { groupInfo } = useGroupInfo();
@@ -45,69 +46,65 @@ function BillPage() {
 
 	function handleBillDateChange(value) {
 		setBillDate(value);
+
+		// 清除錯誤訊息
+		setErrors((prev) => ({
+			...prev,
+			billDate: '',
+		}));
 	}
 
 	function handleBillTitleChange(value) {
 		setBillTitle(value);
-	}
 
-	function handlePayerChange(value) {
-		setPayerPayments((prev) => {
-			const updatedPayments = Object.keys(prev).reduce((acc, key) => {
-				acc[key] = { amount: 0, isSelected: false };
-				return acc;
-			}, {});
-			return updatedPayments;
-		});
-		setPayer(value);
-	}
-
-	function handleSplitChange(value) {
-		setSplitPayments({});
-		setSplit(value);
-		selectedMemberRef.current = {};
+		// 清除錯誤訊息
+		setErrors((prev) => ({
+			...prev,
+			billTitle: '',
+		}));
 	}
 
 	function handleLocalExpenseChange(value) {
 		setLocalExpense(value);
 
 		// 處理 splitPayments 的 equalSplit 同步更新
-		if (splitPayments !== null && splitPayments !== undefined) {
-			const selectedMemberCount = Object.values(selectedMemberRef.current).filter(
-				(item) => item === true,
-			).length;
+		// if (splitPayments !== null && splitPayments !== undefined) {
+		const selectedMemberCount = Object.values(selectedMemberRef.current).filter(
+			(item) => item === true,
+		).length;
 
-			// 計算分帳金額
-			let splitAmount = 0;
-			let remainderAmount = 0;
-			if (value !== 0 && selectedMemberCount !== 0) {
-				splitAmount = round(value / selectedMemberCount, 2);
+		// 計算分帳金額
+		let splitAmount = 0;
+		let remainderAmount = 0;
+		if (value !== 0 && selectedMemberCount !== 0) {
+			splitAmount = round(value / selectedMemberCount, 2);
 
-				if (value - splitAmount * selectedMemberCount !== 0) {
-					remainderAmount = (value - splitAmount * selectedMemberCount).toFixed(2);
-				}
+			if (value - splitAmount * selectedMemberCount !== 0) {
+				remainderAmount = (value - splitAmount * selectedMemberCount).toFixed(2);
 			}
-
-			// 找到最後一個有被選中的 memberId 做餘額分配
-			const lastSelectedMember = Object.keys(selectedMemberRef.current)[
-				Object.keys(selectedMemberRef.current).length - 1
-			];
-
-			Object.entries(splitPayments).forEach(([id, item]) => {
-				if (item.isSelected === true) {
-					setSplitPayments((prev) => ({
-						...prev,
-						[id]: {
-							amount:
-								id === lastSelectedMember
-									? (Number(splitAmount) + Number(remainderAmount)).toFixed(2)
-									: round(value / selectedMemberCount, 2),
-							isSelected: true,
-						},
-					}));
-				}
-			});
 		}
+
+		// 找到最後一個有被選中的 memberId 做餘額分配
+		const lastSelectedMember = Object.keys(selectedMemberRef.current)[
+			Object.keys(selectedMemberRef.current).length - 1
+		];
+
+		// 對 splitPayments 的更新
+		Object.entries(splitPayments).forEach(([id, item]) => {
+			if (item.isSelected === true) {
+				setSplitPayments((prev) => ({
+					...prev,
+					[id]: {
+						amount:
+							id === lastSelectedMember
+								? (Number(splitAmount) + Number(remainderAmount)).toFixed(2)
+								: round(value / selectedMemberCount, 2),
+						isSelected: true,
+					},
+				}));
+			}
+		});
+		// }
 
 		// 對 payerPayments 的更新
 		if (payerPayments !== null && payerPayments !== undefined) {
@@ -136,12 +133,23 @@ function BillPage() {
 			setRate('');
 		} else {
 			setRate(round(floatValue / actualExpense, 3));
+
+			// 清除錯誤訊息
+			setErrors((prev) => ({
+				...prev,
+				rate: '',
+			}));
 		}
+
+		// 清除錯誤訊息
+		setErrors((prev) => ({
+			...prev,
+			localExpense: '',
+		}));
 	}
 
 	function handleLocalExpenseCurrencyChange(value) {
 		setLocalExpenseCurrency(value);
-		console.log('setLocalExpenseCurrency', value);
 	}
 
 	function handleActualExpenseChange(value) {
@@ -160,12 +168,23 @@ function BillPage() {
 			setRate('');
 		} else {
 			setRate(round(localExpense / floatValue, 3));
+
+			// 清除錯誤訊息
+			setErrors((prev) => ({
+				...prev,
+				rate: '',
+			}));
 		}
+
+		// 清除錯誤訊息
+		setErrors((prev) => ({
+			...prev,
+			actualExpense: '',
+		}));
 	}
 
 	function handleActualExpenseCurrencyChange(value) {
 		setActualExpenseCurrency(value);
-		console.log('setActualExpenseCurrency', value);
 	}
 
 	function handleRateChange(value) {
@@ -184,11 +203,40 @@ function BillPage() {
 			setActualExpense('');
 		} else {
 			setActualExpense(round(localExpense / floatValue, 2));
+
+			// 清除錯誤訊息
+			setErrors((prev) => ({
+				...prev,
+				actualExpense: '',
+			}));
 		}
+
+		// 清除錯誤訊息
+		setErrors((prev) => ({
+			...prev,
+			rate: '',
+		}));
+	}
+
+	function handlePayerChange(value) {
+		setPayerPayments((prev) => {
+			const updatedPayments = Object.keys(prev).reduce((acc, key) => {
+				acc[key] = { amount: 0, isSelected: false };
+				return acc;
+			}, {});
+			return updatedPayments;
+		});
+		setPayer(value);
+	}
+
+	function handleSplitChange(value) {
+		setSplitPayments({});
+		setSplit(value);
+		selectedMemberRef.current = {};
 	}
 
 	function handlePayerPaymentChange(id, value, type) {
-		if (type === 'radio') {
+		if (type === 'singlePayer') {
 			setPayerPayments((prev) => {
 				const updatedPayments = Object.keys(prev).reduce((acc, key) => {
 					acc[key] = { amount: 0, isSelected: false };
@@ -261,6 +309,65 @@ function BillPage() {
 
 	// 測試結果用
 	function handleButtonClick() {
+		// 錯誤處理
+		if (billDate === '') {
+			setErrors((prev) => ({
+				...prev,
+				billDate: '請選擇消費日期',
+			}));
+		}
+
+		if (billTitle.trim() === '') {
+			setErrors((prev) => ({
+				...prev,
+				billTitle: '消費品項不得為空白',
+			}));
+		}
+
+		if (localExpense === '' || localExpense === '0' || localExpense === 0) {
+			setErrors((prev) => ({
+				...prev,
+				localExpense: '當地消費金額不得為空白或 0',
+			}));
+		}
+
+		if (actualExpense === '' || actualExpense === '0' || actualExpense === 0) {
+			setErrors((prev) => ({
+				...prev,
+				actualExpense: '實際帳單金額不得為空白或 0',
+			}));
+		}
+
+		if (rate === '' || rate === '0' || rate === 0) {
+			setErrors((prev) => ({
+				...prev,
+				rate: '匯率不得為空白或 0',
+			}));
+		}
+
+		if (Object.values(payerPayments).some(({ isSelected }) => isSelected === 'true')) {
+			setErrors((prev) => ({
+				...prev,
+				payerPayments: '請指定付款人',
+			}));
+		}
+
+		if (
+			billDate === '' ||
+			billTitle.trim() === '' ||
+			localExpense === '' ||
+			localExpense === '0' ||
+			localExpense === 0 ||
+			actualExpense === '' ||
+			actualExpense === '0' ||
+			actualExpense === 0 ||
+			rate === '' ||
+			rate === '0' ||
+			rate === 0
+		) {
+			return;
+		}
+
 		// console.log('billDate', billDate);
 		// console.log('billTitle', billTitle);
 		// console.log('localExpense', localExpense);
@@ -291,10 +398,10 @@ function BillPage() {
 						debts[splitId] = debts[splitId] || {};
 						// 如果他被欠的錢大於我總共欠的錢，我就是欠他我全部欠的錢
 						if (debt >= shortage) {
-							debts[splitId][payerId] = shortage;
+							debts[splitId][payerId] = round(shortage / rate, 2);
 						} else {
 							// 如果他被欠的錢小於我總共欠的錢，我就是欠他他被欠的錢
-							debts[splitId][payerId] = debt;
+							debts[splitId][payerId] = round(debt / rate, 2);
 						}
 					}
 				}
@@ -313,14 +420,16 @@ function BillPage() {
 					type='date'
 					value={billDate}
 					onChange={(e) => handleBillDateChange(e.target.value)}
+					error={errors.billDate}
 				/>
 				<Input
 					className={style.billTitle}
 					title='品項'
 					type='text'
-					placeholder='請輸入品項'
+					placeholder='請輸入消費品項'
 					value={billTitle}
 					onChange={(e) => handleBillTitleChange(e.target.value)}
+					error={errors.billTitle}
 				/>
 				<Input
 					className={style.localExpense}
@@ -329,6 +438,7 @@ function BillPage() {
 					placeholder='請輸入當地消費金額'
 					value={localExpense}
 					onChange={(e) => handleLocalExpenseChange(e.target.value)}
+					error={errors.localExpense}
 					suffix={
 						<Select
 							optionsData={currencyData}
@@ -345,6 +455,7 @@ function BillPage() {
 					placeholder='請輸入實際金額'
 					value={actualExpense}
 					onChange={(e) => handleActualExpenseChange(e.target.value)}
+					error={errors.actualExpense}
 					suffix={
 						<Select
 							optionsData={currencyData}
@@ -361,6 +472,7 @@ function BillPage() {
 					placeholder='請輸入匯率'
 					value={rate}
 					onChange={(e) => handleRateChange(e.target.value)}
+					error={errors.rate}
 				/>
 				<Select
 					className={style.payer}
@@ -381,6 +493,7 @@ function BillPage() {
 							payer='single'
 							payments={payerPayments}
 							onPaymentsChange={handlePayerPaymentChange}
+							error={errors.payerPayments}
 						/>
 					)}
 
