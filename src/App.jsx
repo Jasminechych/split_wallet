@@ -2,7 +2,7 @@ import 'src/style/reset.css';
 import 'src/style/base.scss';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { SetupPage, RecordPage, BillPage, LedgerPage } from 'src/pages';
-import { GroupInfoProvider } from 'src/context/GroupInfoContext';
+import { GroupInfoProvider } from 'src/contexts/GroupInfoContext';
 
 function App() {
 	return (

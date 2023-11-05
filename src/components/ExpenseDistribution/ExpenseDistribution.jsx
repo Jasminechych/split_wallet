@@ -1,7 +1,5 @@
 import { Fragment } from 'react';
 import style from 'src/components/ExpenseDistribution/ExpenseDistribution.module.scss';
-// import { useState } from 'react';
-// import { round } from 'src/utils/round';
 
 function ExpenseDistribution({
 	className,
@@ -12,25 +10,9 @@ function ExpenseDistribution({
 	payments,
 	onPaymentsChange,
 	error,
+	sum,
+	unSettledAmount,
 }) {
-	// console.log('渲染 ExpenseDistribution');
-
-	//  計算未分配金額
-	let unSettledAmount = localExpense;
-	let sum = 0;
-
-	if (payments && Object.keys(payments).length !== 0) {
-		sum = Object.values(payments).reduce((acc, curr) => {
-			return Number(acc) + Number(curr.amount);
-		}, 0);
-
-		if (sum === 0) {
-			unSettledAmount = parseFloat(localExpense - sum).toFixed(2);
-		} else {
-			unSettledAmount = parseFloat(sum - localExpense).toFixed(2);
-		}
-	}
-
 	return (
 		<div className={`${className} ${style.memberList}`}>
 			{memberData.map(({ memberId, memberName }) => {
@@ -90,12 +72,14 @@ function ExpenseDistribution({
 				);
 			})}
 			{/* 顯示未非配金額狀態 */}
-			{parseFloat(unSettledAmount) !== 0 && unSettledAmount !== '' && (
+			{parseFloat(unSettledAmount) > 0 && unSettledAmount !== '' && (
 				<p className={style.unsettled}>
 					{sum > localExpense ? '超付金額' : '未分配金額'} {unSettledAmount}
 				</p>
 			)}
-			<p className={style.errorMessage}>{error ? error : ''}</p>
+
+			{/* 錯誤提示 */}
+			<p className={style.errorMessage}>{error}</p>
 		</div>
 	);
 }

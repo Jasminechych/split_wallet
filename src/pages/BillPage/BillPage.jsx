@@ -4,8 +4,9 @@ import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { Input } from 'src/components/Input/Input';
 import { Select } from 'src/components/Select/Select';
 import { ExpenseDistribution } from 'src/components/ExpenseDistribution/ExpenseDistribution';
-import { round } from 'src/utils/round';
-import { useGroupInfo } from 'src/context/GroupInfoContext';
+import { round } from 'src/libraries/utils/round';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
+import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 
 const memberData = [
@@ -26,10 +27,11 @@ function BillPage() {
 	const [split, setSplit] = useState('平均分攤');
 	const [payerPayments, setPayerPayments] = useState({});
 	const [splitPayments, setSplitPayments] = useState({});
-	const [errors, setErrors] = useState({});
 
 	const selectedMemberRef = useRef({});
 	const { groupInfo } = useGroupInfo();
+	// 使用錯誤訊息管理
+	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
 	console.log('渲染 BillPage');
 	console.log('groupInfo', groupInfo);
@@ -44,24 +46,46 @@ function BillPage() {
 		setSplitPayments(data);
 	}, []);
 
+	//  payerPayments 計算未分配金額
+	let splitPaymentsUnSettledAmount = localExpense || 0;
+	let splitPaymentsSum = 0;
+
+	splitPaymentsSum = Object.values(splitPayments).reduce((acc, curr) => {
+		return Number(acc) + Number(curr.amount);
+	}, 0);
+
+	if (splitPaymentsSum === 0) {
+		splitPaymentsUnSettledAmount = parseFloat(localExpense - splitPaymentsSum);
+	} else {
+		splitPaymentsUnSettledAmount = parseFloat(splitPaymentsSum - localExpense);
+	}
+
+	//  splitPayments 計算未分配金額
+	let payerPaymentsUnSettledAmount = localExpense || 0;
+	let payerPaymentsSum = 0;
+
+	payerPaymentsSum = Object.values(payerPayments).reduce((acc, curr) => {
+		return Number(acc) + Number(curr.amount);
+	}, 0);
+
+	if (payerPaymentsSum === 0) {
+		payerPaymentsUnSettledAmount = parseFloat(localExpense - payerPaymentsSum);
+	} else {
+		payerPaymentsUnSettledAmount = parseFloat(payerPaymentsSum - localExpense);
+	}
+
 	function handleBillDateChange(value) {
 		setBillDate(value);
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			billDate: '',
-		}));
+		clearErrors('billDate');
 	}
 
 	function handleBillTitleChange(value) {
 		setBillTitle(value);
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			billTitle: '',
-		}));
+		clearErrors('billTitle');
 	}
 
 	function handleLocalExpenseChange(value) {
@@ -135,17 +159,11 @@ function BillPage() {
 			setRate(round(floatValue / actualExpense, 3));
 
 			// 清除錯誤訊息
-			setErrors((prev) => ({
-				...prev,
-				rate: '',
-			}));
+			clearErrors('rate');
 		}
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			localExpense: '',
-		}));
+		clearErrors('localExpense');
 	}
 
 	function handleLocalExpenseCurrencyChange(value) {
@@ -170,17 +188,11 @@ function BillPage() {
 			setRate(round(localExpense / floatValue, 3));
 
 			// 清除錯誤訊息
-			setErrors((prev) => ({
-				...prev,
-				rate: '',
-			}));
+			clearErrors('rate');
 		}
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			actualExpense: '',
-		}));
+		clearErrors('actualExpense');
 	}
 
 	function handleActualExpenseCurrencyChange(value) {
@@ -205,17 +217,11 @@ function BillPage() {
 			setActualExpense(round(localExpense / floatValue, 2));
 
 			// 清除錯誤訊息
-			setErrors((prev) => ({
-				...prev,
-				actualExpense: '',
-			}));
+			clearErrors('actualExpense');
 		}
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			rate: '',
-		}));
+		clearErrors('rate');
 	}
 
 	function handlePayerChange(value) {
@@ -251,6 +257,9 @@ function BillPage() {
 				[id]: { amount: round(value, 2) || 0, isSelected: false },
 			}));
 		}
+
+		// 清除錯誤訊息
+		clearErrors('payerPayments');
 	}
 
 	function handleSplitPaymentChange(id, value, type) {
@@ -305,51 +314,40 @@ function BillPage() {
 				[id]: { amount: round(value, 2) || 0, isSelected: false },
 			}));
 		}
+
+		// 清除錯誤訊息
+		clearErrors('splitPayments');
 	}
 
 	// 測試結果用
 	function handleButtonClick() {
 		// 錯誤處理
 		if (billDate === '') {
-			setErrors((prev) => ({
-				...prev,
-				billDate: '請選擇消費日期',
-			}));
+			handleErrors('billDate', '請選擇消費日期');
 		}
 
 		if (billTitle.trim() === '') {
-			setErrors((prev) => ({
-				...prev,
-				billTitle: '消費品項不得為空白',
-			}));
+			handleErrors('billTitle', '消費品項不得為空白');
 		}
 
 		if (localExpense === '' || localExpense === '0' || localExpense === 0) {
-			setErrors((prev) => ({
-				...prev,
-				localExpense: '當地消費金額不得為空白或 0',
-			}));
+			handleErrors('localExpense', '當地消費金額不得為空白或 0');
 		}
 
 		if (actualExpense === '' || actualExpense === '0' || actualExpense === 0) {
-			setErrors((prev) => ({
-				...prev,
-				actualExpense: '實際帳單金額不得為空白或 0',
-			}));
+			handleErrors('actualExpense', '實際帳單金額不得為空白或 0');
 		}
 
 		if (rate === '' || rate === '0' || rate === 0) {
-			setErrors((prev) => ({
-				...prev,
-				rate: '匯率不得為空白或 0',
-			}));
+			handleErrors('rate', '匯率不得為空白或 0');
 		}
 
-		if (Object.values(payerPayments).some(({ isSelected }) => isSelected === 'true')) {
-			setErrors((prev) => ({
-				...prev,
-				payerPayments: '請指定付款人',
-			}));
+		if (payerPaymentsUnSettledAmount > 0) {
+			handleErrors('payerPayments', '請分配帳款');
+		}
+
+		if (splitPaymentsUnSettledAmount > 0) {
+			handleErrors('splitPayments', '請分配帳款');
 		}
 
 		if (
@@ -363,7 +361,9 @@ function BillPage() {
 			actualExpense === 0 ||
 			rate === '' ||
 			rate === '0' ||
-			rate === 0
+			rate === 0 ||
+			payerPaymentsUnSettledAmount > 0 ||
+			splitPaymentsUnSettledAmount > 0
 		) {
 			return;
 		}
@@ -380,6 +380,7 @@ function BillPage() {
 		console.log('payerPayments', payerPayments);
 		console.log('splitPayments', splitPayments);
 
+		// 計算債務關係
 		const debts = {};
 		for (const payerId in payerPayments) {
 			for (const splitId in splitPayments) {
@@ -494,6 +495,8 @@ function BillPage() {
 							payments={payerPayments}
 							onPaymentsChange={handlePayerPaymentChange}
 							error={errors.payerPayments}
+							sum={payerPaymentsSum}
+							unSettledAmount={payerPaymentsUnSettledAmount}
 						/>
 					)}
 
@@ -507,6 +510,9 @@ function BillPage() {
 							payer='multiple'
 							payments={payerPayments}
 							onPaymentsChange={handlePayerPaymentChange}
+							error={errors.payerPayments}
+							sum={payerPaymentsSum}
+							unSettledAmount={payerPaymentsUnSettledAmount}
 						/>
 					)}
 				</Select>
@@ -528,6 +534,9 @@ function BillPage() {
 							localExpense={localExpense}
 							payments={splitPayments}
 							onPaymentsChange={handleSplitPaymentChange}
+							error={errors.splitPayments}
+							sum={splitPaymentsSum}
+							unSettledAmount={splitPaymentsUnSettledAmount}
 						/>
 					)}
 					{split === '各付各的' && (
@@ -539,6 +548,9 @@ function BillPage() {
 							localExpense={localExpense}
 							payments={splitPayments}
 							onPaymentsChange={handleSplitPaymentChange}
+							error={errors.splitPayments}
+							sum={splitPaymentsSum}
+							unSettledAmount={splitPaymentsUnSettledAmount}
 						/>
 					)}
 				</Select>

@@ -6,7 +6,7 @@ import { Input } from 'src/components/Input/Input';
 import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
 import { Select } from 'src/components/Select/Select';
-import { useGroupInfo } from 'src/context/GroupInfoContext';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import currencyData from 'src/assets/currencyData.json';
 
 function SetupPage() {
