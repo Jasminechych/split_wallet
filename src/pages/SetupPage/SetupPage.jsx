@@ -7,6 +7,7 @@ import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
 import { Select } from 'src/components/Select/Select';
 import { useGroupInfo } from 'src/contexts/GroupInfoContext';
+import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 
 function SetupPage() {
@@ -15,47 +16,38 @@ function SetupPage() {
 	const [groupMembersList, setGroupMembersList] = useState([]);
 	const [localExpenseCurrency, setLocalExpenseCurrency] = useState('TWD');
 	const [actualExpenseCurrency, setActualExpenseCurrency] = useState('TWD');
-	const [errors, setErrors] = useState({});
+	// const [errors, setErrors] = useState({});
 
 	const { handleGroupInfoChange } = useGroupInfo();
 	const navigate = useNavigate();
+
+	// 使用錯誤訊息管理
+	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
 	function handleGroupNameChange(e) {
 		setGroupName(e);
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			groupName: '',
-		}));
+		clearErrors('groupName');
 	}
 
 	function handleGroupMemberChange(e) {
 		setGroupMember(e);
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			groupMember: '',
-		}));
+		clearErrors('groupMember');
 	}
 
 	function handleAddClick(groupMember) {
 		// 錯誤處理，防止空白的成員名稱
 		if (!groupMember.trim().length) {
-			setErrors((prev) => ({
-				...prev,
-				groupMember: '群組成員名稱不得為空白',
-			}));
+			handleErrors('groupMember', '群組成員名稱不得為空白');
 			return;
 		}
 
 		// 錯誤處理，防止重複的成員名稱
 		if (groupMembersList.includes(groupMember.trim())) {
-			setErrors((prev) => ({
-				...prev,
-				groupMember: '請輸入非重複的成員名稱',
-			}));
+			handleErrors('groupMember', '請輸入非重複的成員名稱');
 			return;
 		}
 
@@ -64,10 +56,7 @@ function SetupPage() {
 		setGroupMember('');
 
 		// 清除錯誤訊息
-		setErrors((prev) => ({
-			...prev,
-			groupMember: '',
-		}));
+		clearErrors('groupMember');
 	}
 
 	function handleLocalExpenseCurrencyChange(value) {
@@ -89,18 +78,12 @@ function SetupPage() {
 	function handleSubmit() {
 		// 錯誤處理，群組名稱
 		if (!groupName.trim().length) {
-			setErrors((prev) => ({
-				...prev,
-				groupName: '群組名稱不得為空白',
-			}));
+			handleErrors('groupName', '群組名稱不得為空白');
 		}
 
 		// 錯誤處理，群組成員
 		if (!groupMembersList.length) {
-			setErrors((prev) => ({
-				...prev,
-				groupMember: '請至少輸入一位群組成員',
-			}));
+			handleErrors('groupMember', '請至少輸入一位群組成員');
 		}
 
 		if (groupName === '' || !groupMembersList.length) return;
