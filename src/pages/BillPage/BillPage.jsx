@@ -5,7 +5,7 @@ import { Input } from 'src/components/Input/Input';
 import { Select } from 'src/components/Select/Select';
 import { ExpenseDistribution } from 'src/components/ExpenseDistribution/ExpenseDistribution';
 import { round } from 'src/libraries/utils/round';
-import { useGroupInfo } from 'src/contexts/GroupInfoContext';
+// import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 
@@ -28,25 +28,27 @@ function BillPage() {
 	const [payerPayments, setPayerPayments] = useState({});
 	const [splitPayments, setSplitPayments] = useState({});
 
-	const selectedMemberRef = useRef({});
-	const { groupInfo } = useGroupInfo();
-	// 使用錯誤訊息管理
+	const selectedMemberRef = useRef([]);
+
+	// const { groupInfo } = useGroupInfo();
+
+	// 使用錯誤訊息管理 Hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
 	console.log('渲染 BillPage');
-	console.log('groupInfo', groupInfo);
+	// console.log('groupInfo', groupInfo);
 
 	useEffect(() => {
 		// 初始化資料格式
 		const data = {};
 		memberData.map(({ memberId }) => {
-			data[memberId] = { amount: 0, isSelected: false };
+			data[memberId] = { amount: '0.00', isSelected: false };
 		});
 		setPayerPayments(data);
 		setSplitPayments(data);
 	}, []);
 
-	//  payerPayments 計算未分配金額
+	//  splitPayments 計算未分配金額
 	let splitPaymentsUnSettledAmount = localExpense || 0;
 	let splitPaymentsSum = 0;
 
@@ -60,7 +62,14 @@ function BillPage() {
 		splitPaymentsUnSettledAmount = parseFloat(splitPaymentsSum - localExpense);
 	}
 
-	//  splitPayments 計算未分配金額
+	console.log(
+		'splitPaymentsUnSettledAmount:',
+		splitPaymentsUnSettledAmount,
+		'splitPaymentsSum',
+		splitPaymentsSum,
+	);
+
+	//  payerPayments 計算未分配金額
 	let payerPaymentsUnSettledAmount = localExpense || 0;
 	let payerPaymentsSum = 0;
 
@@ -73,6 +82,13 @@ function BillPage() {
 	} else {
 		payerPaymentsUnSettledAmount = parseFloat(payerPaymentsSum - localExpense);
 	}
+
+	console.log(
+		'payerPaymentsUnSettledAmount:',
+		payerPaymentsUnSettledAmount,
+		'payerPaymentsSum',
+		payerPaymentsSum,
+	);
 
 	function handleBillDateChange(value) {
 		setBillDate(value);
@@ -88,30 +104,37 @@ function BillPage() {
 		clearErrors('billTitle');
 	}
 
-	function handleLocalExpenseChange(value) {
-		setLocalExpense(value);
+	function handleLocalExpenseChange(inputValue) {
+		const regex = /^[0-9]+(\.[0-9]+)?$/;
 
-		// 處理 splitPayments 的 equalSplit 同步更新
-		// if (splitPayments !== null && splitPayments !== undefined) {
-		const selectedMemberCount = Object.values(selectedMemberRef.current).filter(
-			(item) => item === true,
-		).length;
+		setLocalExpense(inputValue);
+		if (!regex.test(inputValue)) {
+			handleErrors('localExpense', '請輸入數字');
+			return;
+		}
+
+		// 清除錯誤訊息
+		clearErrors('localExpense');
+
+		// 將 inputValue string 轉成數字 number
+		const value = Number(inputValue);
+
+		// 計算選中的成員數量 number
+		const selectedMemberCount = selectedMemberRef.current.length;
 
 		// 計算分帳金額
-		let splitAmount = 0;
-		let remainderAmount = 0;
+		let splitAmount = 0; // 要平分的金額
+		let remainderAmount = 0; // 除不盡的金額
 		if (value !== 0 && selectedMemberCount !== 0) {
 			splitAmount = round(value / selectedMemberCount, 2);
 
 			if (value - splitAmount * selectedMemberCount !== 0) {
-				remainderAmount = (value - splitAmount * selectedMemberCount).toFixed(2);
+				remainderAmount = round(value - splitAmount * selectedMemberCount, 2);
 			}
 		}
 
-		// 找到最後一個有被選中的 memberId 做餘額分配
-		const lastSelectedMember = Object.keys(selectedMemberRef.current)[
-			Object.keys(selectedMemberRef.current).length - 1
-		];
+		// 找到最後一個有被選中的 memberId 要做餘額分配 string || undefined
+		const lastSelectedMember = selectedMemberRef.current[selectedMemberRef.current.length - 1];
 
 		// 對 splitPayments 的更新
 		Object.entries(splitPayments).forEach(([id, item]) => {
@@ -121,71 +144,62 @@ function BillPage() {
 					[id]: {
 						amount:
 							id === lastSelectedMember
-								? (Number(splitAmount) + Number(remainderAmount)).toFixed(2)
+								? round(Number(splitAmount) + Number(remainderAmount), 2)
 								: round(value / selectedMemberCount, 2),
 						isSelected: true,
 					},
 				}));
 			}
 		});
-		// }
 
 		// 對 payerPayments 的更新
-		if (payerPayments !== null && payerPayments !== undefined) {
-			Object.entries(payerPayments).forEach(([id, item]) => {
-				if (item.isSelected === true) {
-					setPayerPayments((prev) => ({
-						...prev,
-						[id]: {
-							amount: round(value, 2),
-							isSelected: true,
-						},
-					}));
-				}
-			});
-		}
+		Object.entries(payerPayments).forEach(([id, item]) => {
+			if (item.isSelected === true) {
+				setPayerPayments((prev) => ({
+					...prev,
+					[id]: {
+						amount: round(value, 2),
+						isSelected: true,
+					},
+				}));
+			}
+		});
 
 		// 對 rate 的更新
-		// 排除空字串或非數字的情況
-		if (value === '' || isNaN(value)) {
-			setRate('');
-			return;
-		}
-		// 排除 0.0 幾皆為 0 的狀況
-		const floatValue = parseFloat(value);
-		if (floatValue === 0 || actualExpense === 0 || actualExpense === '') {
+		if (value === 0 || actualExpense === 0 || actualExpense === '') {
 			setRate('');
 		} else {
-			setRate(round(floatValue / actualExpense, 3));
+			setRate(round(value / actualExpense, 3));
 
 			// 清除錯誤訊息
 			clearErrors('rate');
 		}
-
-		// 清除錯誤訊息
-		clearErrors('localExpense');
 	}
 
 	function handleLocalExpenseCurrencyChange(value) {
 		setLocalExpenseCurrency(value);
 	}
 
-	function handleActualExpenseChange(value) {
-		setActualExpense(value);
+	function handleActualExpenseChange(inputValue) {
+		const regex = /^[0-9]+(\.[0-9]+)?$/;
 
-		// 對 rate 的更新
-		// 排除空字串或非數字的情況
-		if (value === '' || isNaN(value)) {
-			setRate('');
+		setActualExpense(inputValue);
+
+		if (!regex.test(inputValue)) {
+			handleErrors('actualExpense', '請輸入數字');
 			return;
 		}
+		// 清除錯誤訊息
+		clearErrors('actualExpense');
 
-		// 排除 0.0 幾皆為 0 的狀況
-		const floatValue = parseFloat(value);
-		if (floatValue === 0 || localExpense === 0 || localExpense === '') {
+		const value = parseFloat(inputValue);
+
+		if (value === 0 || localExpense === 0 || localExpense === '') {
+			// 對 rate 的更新
 			setRate('');
+			handleErrors('rate', '當地消費金額或實際帳單金額不得為 0');
 		} else {
-			setRate(round(localExpense / floatValue, 3));
+			setRate(round(localExpense / value, 3));
 
 			// 清除錯誤訊息
 			clearErrors('rate');
@@ -199,35 +213,40 @@ function BillPage() {
 		setActualExpenseCurrency(value);
 	}
 
-	function handleRateChange(value) {
-		setRate(value);
+	function handleRateChange(InputValue) {
+		const regex = /^[0-9]+(\.[0-9]+)?$/;
 
-		// 對實 actualExpense 的更新
-		// 排除空字串或非數字的情況
-		if (value === '' || isNaN(value)) {
+		setRate(InputValue);
+
+		if (!regex.test(InputValue)) {
+			handleErrors('rate', '請輸入數字');
+
+			// 對 actualExpense 的更新
 			setActualExpense('');
+			handleErrors('actualExpense', '匯率不得為 0');
 			return;
-		}
-
-		// 排除 0.0 幾皆為 0 的狀況
-		const floatValue = parseFloat(value);
-		if (floatValue === 0 || localExpense === 0 || localExpense === '') {
-			setActualExpense('');
-		} else {
-			setActualExpense(round(localExpense / floatValue, 2));
-
-			// 清除錯誤訊息
-			clearErrors('actualExpense');
 		}
 
 		// 清除錯誤訊息
 		clearErrors('rate');
+
+		const value = parseFloat(InputValue);
+
+		// 對實 actualExpense 的更新
+		if (value === 0 || localExpense === 0 || localExpense === '') {
+			setActualExpense('');
+		} else {
+			setActualExpense(round(localExpense / value, 2));
+
+			// 清除錯誤訊息
+			clearErrors('actualExpense');
+		}
 	}
 
 	function handlePayerChange(value) {
 		setPayerPayments((prev) => {
 			const updatedPayments = Object.keys(prev).reduce((acc, key) => {
-				acc[key] = { amount: 0, isSelected: false };
+				acc[key] = { amount: '0.00', isSelected: false };
 				return acc;
 			}, {});
 			return updatedPayments;
@@ -236,9 +255,15 @@ function BillPage() {
 	}
 
 	function handleSplitChange(value) {
-		setSplitPayments({});
+		setSplitPayments((prev) => {
+			const updatedPayments = Object.keys(prev).reduce((acc, key) => {
+				acc[key] = { amount: '0.00', isSelected: false };
+				return acc;
+			}, {});
+			return updatedPayments;
+		});
 		setSplit(value);
-		selectedMemberRef.current = {};
+		selectedMemberRef.current = [];
 	}
 
 	function handlePayerPaymentChange(id, value, type) {
@@ -254,7 +279,7 @@ function BillPage() {
 		} else {
 			setPayerPayments((prev) => ({
 				...prev,
-				[id]: { amount: round(value, 2) || 0, isSelected: false },
+				[id]: { amount: round(value, 2) || '0.00', isSelected: false },
 			}));
 		}
 
@@ -262,13 +287,21 @@ function BillPage() {
 		clearErrors('payerPayments');
 	}
 
-	function handleSplitPaymentChange(id, value, type) {
-		if (type === 'equalSplit') {
-			selectedMemberRef.current[id] = !selectedMemberRef.current[id];
+	function handleSplitPaymentChange(id, inputValue, type) {
+		// number
+		const value = Number(inputValue);
 
-			const selectedMemberCount = Object.values(selectedMemberRef.current).filter(
-				(item) => item === true,
-			).length;
+		if (type === 'equalSplit') {
+			// 紀錄即時的 checked 狀態
+			if (!selectedMemberRef.current.includes(id)) {
+				selectedMemberRef.current.push(id);
+			} else {
+				const inputIdIndex = selectedMemberRef.current.indexOf(id);
+				selectedMemberRef.current.splice(inputIdIndex, 1);
+			}
+
+			// 計算選中的成員數量 number
+			const selectedMemberCount = selectedMemberRef.current.length;
 
 			// 計算分帳金額
 			let splitAmount = 0;
@@ -276,34 +309,35 @@ function BillPage() {
 			if (value !== 0 && selectedMemberCount !== 0) {
 				splitAmount = round(value / selectedMemberCount, 2);
 
-				if (value - splitAmount * selectedMemberCount !== 0) {
-					remainderAmount = (value - splitAmount * selectedMemberCount).toFixed(2);
+				if (value - Number(splitAmount) * selectedMemberCount !== 0) {
+					remainderAmount = round(value - Number(splitAmount) * selectedMemberCount, 2);
 				}
 			}
 
-			// 更新所有已選中成員的金額
-			if (splitPayments !== null && splitPayments !== undefined) {
-				Object.entries(splitPayments).forEach(([memberId, item]) => {
-					if (item.isSelected === true) {
-						setSplitPayments((prev) => ({
-							...prev,
-							[memberId]: {
-								amount: splitAmount,
-								isSelected: true,
-							},
-						}));
-					}
-				});
-			}
+			// 找到最後一個有被選中的 memberId 要做餘額分配 string || undefined
+			// const lastSelectedMember = selectedMemberRef.current[selectedMemberRef.current.length - 1];
+
+			// 先更新所有已選中成員的金額
+			Object.entries(splitPayments).forEach(([memberId, item]) => {
+				if (item.isSelected === true) {
+					setSplitPayments((prev) => ({
+						...prev,
+						[memberId]: {
+							amount: round(splitAmount, 2),
+							isSelected: true,
+						},
+					}));
+				}
+			});
 
 			// 更新合併此次收到的資料
 			setSplitPayments((prev) => ({
 				...prev,
 				[id]: {
 					amount:
-						prev[id] && prev[id].amount !== 0
-							? 0
-							: (Number(splitAmount) + Number(remainderAmount)).toFixed(2), // 如果平均分配除不盡的話將餘額分配給最後選到的人
+						prev[id] && Number(prev[id].amount) !== 0
+							? '0.00'
+							: round(Number(splitAmount) + Number(remainderAmount), 2), // 如果平均分配除不盡的話將餘額分配給最後選到的人
 					isSelected: prev[id] && prev[id].isSelected === true ? false : true,
 				},
 			}));
@@ -330,15 +364,15 @@ function BillPage() {
 			handleErrors('billTitle', '消費品項不得為空白');
 		}
 
-		if (localExpense === '' || localExpense === '0' || localExpense === 0) {
+		if (localExpense === '' || localExpense === '0') {
 			handleErrors('localExpense', '當地消費金額不得為空白或 0');
 		}
 
-		if (actualExpense === '' || actualExpense === '0' || actualExpense === 0) {
+		if (actualExpense === '' || actualExpense === '0') {
 			handleErrors('actualExpense', '實際帳單金額不得為空白或 0');
 		}
 
-		if (rate === '' || rate === '0' || rate === 0) {
+		if (rate === '' || rate === '0') {
 			handleErrors('rate', '匯率不得為空白或 0');
 		}
 
@@ -355,13 +389,10 @@ function BillPage() {
 			billTitle.trim() === '' ||
 			localExpense === '' ||
 			localExpense === '0' ||
-			localExpense === 0 ||
 			actualExpense === '' ||
 			actualExpense === '0' ||
-			actualExpense === 0 ||
 			rate === '' ||
 			rate === '0' ||
-			rate === 0 ||
 			payerPaymentsUnSettledAmount > 0 ||
 			splitPaymentsUnSettledAmount > 0
 		) {

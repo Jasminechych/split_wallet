@@ -13,6 +13,7 @@ function ExpenseDistribution({
 	sum,
 	unSettledAmount,
 }) {
+	console.log('in Ex unSettledAmount:', unSettledAmount, 'sum:', sum);
 	return (
 		<div className={`${className} ${style.memberList}`}>
 			{memberData.map(({ memberId, memberName }) => {
@@ -41,7 +42,7 @@ function ExpenseDistribution({
 										<p className={style.numberInput}>
 											{payments[memberId] && payments[memberId].isSelected === true
 												? payments[memberId].amount
-												: '0'}
+												: '0.00'}
 										</p>
 									</div>
 								</label>
@@ -62,7 +63,7 @@ function ExpenseDistribution({
 										className={style.numberInput}
 										type='number'
 										name={inputName}
-										placeholder='0'
+										placeholder='0.00'
 										onChange={(e) => onPaymentsChange(memberId, e.target.value, inputType)}
 									/>
 								</div>
@@ -72,7 +73,7 @@ function ExpenseDistribution({
 				);
 			})}
 			{/* 顯示未非配金額狀態 */}
-			{parseFloat(unSettledAmount) > 0 && unSettledAmount !== '' && (
+			{parseFloat(unSettledAmount) !== 0 && unSettledAmount !== '' && (
 				<p className={style.unsettled}>
 					{sum > localExpense ? '超付金額' : '未分配金額'} {unSettledAmount}
 				</p>
