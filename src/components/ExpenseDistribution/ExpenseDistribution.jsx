@@ -71,7 +71,7 @@ function ExpenseDistribution({
 				);
 			})}
 			{/* 顯示未非配金額狀態 */}
-			{unSettledAmount !== 0 && (
+			{parseFloat(unSettledAmount) !== 0 && (
 				<p className={style.unsettled}>
 					{unSettledAmount < 0 ? '未分配金額' : '超付金額'} {unSettledAmount}
 				</p>

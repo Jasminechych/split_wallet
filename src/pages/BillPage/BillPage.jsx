@@ -72,7 +72,7 @@ function BillPage() {
 			return Number(acc) + Number(curr.amount);
 		}, 0);
 
-		unSettled = sum - Number(billData.localExpense);
+		unSettled = round(sum - Number(billData.localExpense), 2);
 
 		return unSettled;
 	}
@@ -332,6 +332,54 @@ function BillPage() {
 		});
 	}
 
+	function calculateDebts() {
+		let updatedDebts = {};
+
+		for (const creditorId in billData.payerPayments) {
+			for (const debtorId in billData.splitPayments) {
+				const debtorSplitPayment = Number(billData.splitPayments[debtorId].amount);
+				const debtorPayerPayment = Number(billData.payerPayments[debtorId].amount);
+				const creditorSplitPayment = Number(billData.splitPayments[creditorId].amount);
+				const creditorPayerPayment = Number(billData.payerPayments[creditorId].amount);
+
+				// 潛在債務人
+				const potentialDebtor =
+					debtorSplitPayment > 0 || debtorSplitPayment - debtorPayerPayment > 0;
+
+				if (!potentialDebtor || debtorId === creditorId) continue;
+
+				// 債務人債款
+				const debtorDebts = round(debtorSplitPayment - debtorPayerPayment, 2);
+
+				// 潛在債權人
+				const potentialCreditor = creditorPayerPayment - creditorSplitPayment > 0;
+
+				if (!potentialCreditor) continue;
+
+				// 債權人債款
+				const creditorDebts = round(creditorPayerPayment - creditorSplitPayment, 2);
+
+				// 建立債務關係
+				updatedDebts[debtorId] = updatedDebts[debtorId] || {};
+
+				// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
+				if (Number(creditorDebts) >= Number(debtorDebts)) {
+					updatedDebts[debtorId][creditorId] = {
+						amount: round(Number(debtorDebts) / Number(billData.rate), 2),
+						currency: billData.actualExpenseCurrency,
+					};
+				} else {
+					// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
+					updatedDebts[debtorId][creditorId] = {
+						amount: round(Number(creditorDebts) / Number(billData.rate), 2),
+						currency: billData.actualExpenseCurrency,
+					};
+				}
+			}
+		}
+		return updatedDebts;
+	}
+
 	// console.log('billData', billData);
 
 	// 測試結果
@@ -385,64 +433,6 @@ function BillPage() {
 			...prev,
 			debts: updatedDebts,
 		}));
-	}
-
-	function calculateDebts() {
-		let updatedDebts = {};
-
-		for (const payerId in billData.payerPayments) {
-			for (const splitId in billData.splitPayments) {
-				// 潛在債務人
-				const potentialDebtor =
-					(Number(billData.splitPayments[splitId].amount) > 0 && splitId !== payerId) ||
-					(Number(billData.splitPayments[splitId].amount) -
-						Number(billData.payerPayments[splitId].amount) >
-						0 &&
-						splitId !== payerId);
-
-				if (!potentialDebtor) continue;
-
-				// 債務人債款
-				const debtorDebts = round(
-					Number(billData.splitPayments[splitId].amount) -
-						Number(billData.payerPayments[splitId].amount),
-					2,
-				);
-
-				// 潛在債權人
-				const potentialCreditor =
-					Number(billData.payerPayments[payerId].amount) -
-						Number(billData.splitPayments[payerId].amount) >
-					0;
-
-				if (!potentialCreditor) continue;
-
-				// 債權人債款
-				const creditorDebts = round(
-					Number(billData.payerPayments[payerId].amount) -
-						Number(billData.splitPayments[payerId].amount),
-					2,
-				);
-
-				// 建立債務關係
-				updatedDebts[splitId] = updatedDebts[splitId] || {};
-
-				// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
-				if (Number(creditorDebts) >= Number(debtorDebts)) {
-					updatedDebts[splitId][payerId] = {
-						amount: round(Number(debtorDebts) / Number(billData.rate), 2),
-						currency: billData.actualExpenseCurrency,
-					};
-				} else {
-					// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
-					updatedDebts[splitId][payerId] = {
-						amount: round(Number(creditorDebts) / Number(billData.rate), 2),
-						currency: billData.actualExpenseCurrency,
-					};
-				}
-			}
-		}
-		return updatedDebts;
 	}
 
 	return (
