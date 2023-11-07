@@ -10,10 +10,8 @@ function ExpenseDistribution({
 	payments,
 	onPaymentsChange,
 	error,
-	sum,
 	unSettledAmount,
 }) {
-	console.log('in Ex unSettledAmount:', unSettledAmount, 'sum:', sum);
 	return (
 		<div className={`${className} ${style.memberList}`}>
 			{memberData.map(({ memberId, memberName }) => {
@@ -73,9 +71,9 @@ function ExpenseDistribution({
 				);
 			})}
 			{/* 顯示未非配金額狀態 */}
-			{parseFloat(unSettledAmount) !== 0 && unSettledAmount !== '' && (
+			{unSettledAmount !== 0 && (
 				<p className={style.unsettled}>
-					{sum > localExpense ? '超付金額' : '未分配金額'} {unSettledAmount}
+					{unSettledAmount < 0 ? '未分配金額' : '超付金額'} {unSettledAmount}
 				</p>
 			)}
 

@@ -5,6 +5,7 @@ import { Input } from 'src/components/Input/Input';
 import { Select } from 'src/components/Select/Select';
 import { ExpenseDistribution } from 'src/components/ExpenseDistribution/ExpenseDistribution';
 import { round } from 'src/libraries/utils/round';
+import { checkValidNumberInput } from 'src/libraries/utils/checkValidNumberInput';
 // import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
@@ -16,27 +17,31 @@ const memberData = [
 ];
 
 function BillPage() {
-	const [billDate, setBillDate] = useState('');
-	const [billTitle, setBillTitle] = useState('');
-	const [localExpense, setLocalExpense] = useState('');
-	const [localExpenseCurrency, setLocalExpenseCurrency] = useState('');
-	const [actualExpense, setActualExpense] = useState('');
-	const [actualExpenseCurrency, setActualExpenseCurrency] = useState('');
-	const [rate, setRate] = useState('');
-	const [payer, setPayer] = useState('單人付款');
-	const [split, setSplit] = useState('平均分攤');
-	const [payerPayments, setPayerPayments] = useState({});
-	const [splitPayments, setSplitPayments] = useState({});
+	const [billData, setBillData] = useState({
+		billDate: '',
+		billTitle: '',
+		localExpense: '',
+		localExpenseCurrency: '',
+		actualExpense: '',
+		actualExpenseCurrency: '',
+		rate: '',
+		payer: '單人付款',
+		split: '平均分攤',
+		payerPayments: {},
+		splitPayments: {},
+		debts: {},
+	});
 
-	const selectedMemberRef = useRef([]);
+	// 紀錄當前 選到的 payer & split members
+	const selectedSplitMemberRef = useRef([]);
+	const selectedPayerMemberRef = useRef('');
 
 	// const { groupInfo } = useGroupInfo();
 
-	// 使用錯誤訊息管理 Hook
+	// 錯誤訊息管理 Hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
 	console.log('渲染 BillPage');
-	// console.log('groupInfo', groupInfo);
 
 	useEffect(() => {
 		// 初始化資料格式
@@ -44,71 +49,61 @@ function BillPage() {
 		memberData.map(({ memberId }) => {
 			data[memberId] = { amount: '0.00', isSelected: false };
 		});
-		setPayerPayments(data);
-		setSplitPayments(data);
+		setBillData((prev) => ({
+			...prev,
+			// 依 setup 待修正
+			localExpenseCurrency: 'TWD',
+			actualExpenseCurrency: 'TWD',
+			payerPayments: data,
+			splitPayments: data,
+		}));
 	}, []);
 
-	//  splitPayments 計算未分配金額
-	let splitPaymentsUnSettledAmount = localExpense || 0;
-	let splitPaymentsSum = 0;
-
-	splitPaymentsSum = Object.values(splitPayments).reduce((acc, curr) => {
-		return Number(acc) + Number(curr.amount);
-	}, 0);
-
-	if (splitPaymentsSum === 0) {
-		splitPaymentsUnSettledAmount = parseFloat(localExpense - splitPaymentsSum);
-	} else {
-		splitPaymentsUnSettledAmount = parseFloat(splitPaymentsSum - localExpense);
-	}
-
-	console.log(
-		'splitPaymentsUnSettledAmount:',
-		splitPaymentsUnSettledAmount,
-		'splitPaymentsSum',
-		splitPaymentsSum,
-	);
-
 	//  payerPayments 計算未分配金額
-	let payerPaymentsUnSettledAmount = localExpense || 0;
-	let payerPaymentsSum = 0;
+	const payerPaymentsUnSettledAmount = calculateUnSettledAmount(billData.payerPayments);
+	//  splitPayments 計算未分配金額
+	const splitPaymentsUnSettledAmount = calculateUnSettledAmount(billData.splitPayments);
 
-	payerPaymentsSum = Object.values(payerPayments).reduce((acc, curr) => {
-		return Number(acc) + Number(curr.amount);
-	}, 0);
+	function calculateUnSettledAmount(data) {
+		let unSettled = Number(billData.localExpense);
+		let sum = 0;
 
-	if (payerPaymentsSum === 0) {
-		payerPaymentsUnSettledAmount = parseFloat(localExpense - payerPaymentsSum);
-	} else {
-		payerPaymentsUnSettledAmount = parseFloat(payerPaymentsSum - localExpense);
+		sum = Object.values(data).reduce((acc, curr) => {
+			return Number(acc) + Number(curr.amount);
+		}, 0);
+
+		unSettled = sum - Number(billData.localExpense);
+
+		return unSettled;
 	}
-
-	console.log(
-		'payerPaymentsUnSettledAmount:',
-		payerPaymentsUnSettledAmount,
-		'payerPaymentsSum',
-		payerPaymentsSum,
-	);
 
 	function handleBillDateChange(value) {
-		setBillDate(value);
+		setBillData((prev) => ({
+			...prev,
+			billDate: value,
+		}));
 
 		// 清除錯誤訊息
 		clearErrors('billDate');
 	}
 
 	function handleBillTitleChange(value) {
-		setBillTitle(value);
+		setBillData((prev) => ({
+			...prev,
+			billTitle: value,
+		}));
 
 		// 清除錯誤訊息
 		clearErrors('billTitle');
 	}
 
-	function handleLocalExpenseChange(inputValue) {
-		const regex = /^[0-9]+(\.[0-9]+)?$/;
+	function handleLocalExpenseChange(value) {
+		setBillData((prev) => ({
+			...prev,
+			localExpense: value,
+		}));
 
-		setLocalExpense(inputValue);
-		if (!regex.test(inputValue)) {
+		if (!checkValidNumberInput(value)) {
 			handleErrors('localExpense', '請輸入數字');
 			return;
 		}
@@ -116,170 +111,122 @@ function BillPage() {
 		// 清除錯誤訊息
 		clearErrors('localExpense');
 
-		// 將 inputValue string 轉成數字 number
-		const value = Number(inputValue);
-
-		// 計算選中的成員數量 number
-		const selectedMemberCount = selectedMemberRef.current.length;
-
-		// 計算分帳金額
-		let splitAmount = 0; // 要平分的金額
-		let remainderAmount = 0; // 除不盡的金額
-		if (value !== 0 && selectedMemberCount !== 0) {
-			splitAmount = round(value / selectedMemberCount, 2);
-
-			if (value - splitAmount * selectedMemberCount !== 0) {
-				remainderAmount = round(value - splitAmount * selectedMemberCount, 2);
-			}
+		// 對 splitPayments 的更新
+		if (billData.split === '平均分攤') {
+			updateEqualSplitOrSinglePayerData('splitPayments', value, 'equalSplit');
 		}
 
-		// 找到最後一個有被選中的 memberId 要做餘額分配 string || undefined
-		const lastSelectedMember = selectedMemberRef.current[selectedMemberRef.current.length - 1];
-
-		// 對 splitPayments 的更新
-		Object.entries(splitPayments).forEach(([id, item]) => {
-			if (item.isSelected === true) {
-				setSplitPayments((prev) => ({
-					...prev,
-					[id]: {
-						amount:
-							id === lastSelectedMember
-								? round(Number(splitAmount) + Number(remainderAmount), 2)
-								: round(value / selectedMemberCount, 2),
-						isSelected: true,
-					},
-				}));
-			}
-		});
-
 		// 對 payerPayments 的更新
-		Object.entries(payerPayments).forEach(([id, item]) => {
-			if (item.isSelected === true) {
-				setPayerPayments((prev) => ({
-					...prev,
-					[id]: {
-						amount: round(value, 2),
-						isSelected: true,
-					},
-				}));
-			}
-		});
+		if (billData.payer === '單人付款' && selectedPayerMemberRef !== '') {
+			updateEqualSplitOrSinglePayerData('payerPayments', value, 'singlePayer');
+		}
 
 		// 對 rate 的更新
-		if (value === 0 || actualExpense === 0 || actualExpense === '') {
-			setRate('');
-		} else {
-			setRate(round(value / actualExpense, 3));
-
-			// 清除錯誤訊息
-			clearErrors('rate');
+		if (Number(billData.actualExpense) !== 0) {
+			calculateRate(value, billData.actualExpense);
 		}
 	}
 
 	function handleLocalExpenseCurrencyChange(value) {
-		setLocalExpenseCurrency(value);
+		setBillData((prev) => ({
+			...prev,
+			localExpenseCurrency: value,
+		}));
 	}
 
-	function handleActualExpenseChange(inputValue) {
-		const regex = /^[0-9]+(\.[0-9]+)?$/;
+	function handleActualExpenseChange(value) {
+		setBillData((prev) => ({
+			...prev,
+			actualExpense: value,
+		}));
 
-		setActualExpense(inputValue);
-
-		if (!regex.test(inputValue)) {
+		if (!checkValidNumberInput(value)) {
 			handleErrors('actualExpense', '請輸入數字');
 			return;
 		}
-		// 清除錯誤訊息
-		clearErrors('actualExpense');
-
-		const value = parseFloat(inputValue);
-
-		if (value === 0 || localExpense === 0 || localExpense === '') {
-			// 對 rate 的更新
-			setRate('');
-			handleErrors('rate', '當地消費金額或實際帳單金額不得為 0');
-		} else {
-			setRate(round(localExpense / value, 3));
-
-			// 清除錯誤訊息
-			clearErrors('rate');
-		}
 
 		// 清除錯誤訊息
 		clearErrors('actualExpense');
+
+		// 對 rate 的更新
+		calculateRate(billData.localExpense, value);
+		// 清除錯誤訊息
+		clearErrors('rate');
 	}
 
 	function handleActualExpenseCurrencyChange(value) {
-		setActualExpenseCurrency(value);
+		setBillData((prev) => ({
+			...prev,
+			actualExpenseCurrency: value,
+		}));
 	}
 
-	function handleRateChange(InputValue) {
-		const regex = /^[0-9]+(\.[0-9]+)?$/;
+	function handleRateChange(value) {
+		setBillData((prev) => ({
+			...prev,
+			rate: value,
+		}));
 
-		setRate(InputValue);
-
-		if (!regex.test(InputValue)) {
+		if (!checkValidNumberInput(value)) {
 			handleErrors('rate', '請輸入數字');
-
-			// 對 actualExpense 的更新
-			setActualExpense('');
-			handleErrors('actualExpense', '匯率不得為 0');
 			return;
 		}
 
 		// 清除錯誤訊息
 		clearErrors('rate');
 
-		const value = parseFloat(InputValue);
-
 		// 對實 actualExpense 的更新
-		if (value === 0 || localExpense === 0 || localExpense === '') {
-			setActualExpense('');
-		} else {
-			setActualExpense(round(localExpense / value, 2));
+		setBillData((prev) => ({
+			...prev,
+			actualExpense:
+				Number(value) === 0 || Number(billData.localExpense) === 0
+					? ''
+					: round(billData.localExpense / parseFloat(value), 2),
+		}));
 
-			// 清除錯誤訊息
-			clearErrors('actualExpense');
-		}
+		// 清除錯誤訊息
+		clearErrors('actualExpense');
 	}
 
 	function handlePayerChange(value) {
-		setPayerPayments((prev) => {
-			const updatedPayments = Object.keys(prev).reduce((acc, key) => {
+		setBillData((prev) => ({
+			...prev,
+			payer: value,
+			payerPayments: Object.keys(prev.payerPayments).reduce((acc, key) => {
 				acc[key] = { amount: '0.00', isSelected: false };
 				return acc;
-			}, {});
-			return updatedPayments;
-		});
-		setPayer(value);
+			}, {}),
+		}));
+
+		selectedPayerMemberRef.current = '';
 	}
 
 	function handleSplitChange(value) {
-		setSplitPayments((prev) => {
-			const updatedPayments = Object.keys(prev).reduce((acc, key) => {
+		setBillData((prev) => ({
+			...prev,
+			split: value,
+			splitPayments: Object.keys(prev.splitPayments).reduce((acc, key) => {
 				acc[key] = { amount: '0.00', isSelected: false };
 				return acc;
-			}, {});
-			return updatedPayments;
-		});
-		setSplit(value);
-		selectedMemberRef.current = [];
+			}, {}),
+		}));
+
+		selectedSplitMemberRef.current = [];
 	}
 
 	function handlePayerPaymentChange(id, value, type) {
+		// 紀錄選中的成員
+		selectedPayerMemberRef.current = id;
+
 		if (type === 'singlePayer') {
-			setPayerPayments((prev) => {
-				const updatedPayments = Object.keys(prev).reduce((acc, key) => {
-					acc[key] = { amount: 0, isSelected: false };
-					return acc;
-				}, {});
-				updatedPayments[id] = { amount: round(localExpense, 2), isSelected: true };
-				return updatedPayments;
-			});
+			updateEqualSplitOrSinglePayerData('payerPayments', value, 'singlePayer');
 		} else {
-			setPayerPayments((prev) => ({
+			setBillData((prev) => ({
 				...prev,
-				[id]: { amount: round(value, 2) || '0.00', isSelected: false },
+				payerPayments: {
+					...prev.payerPayments,
+					[id]: { amount: round(value, 2) || '0.00', isSelected: false },
+				},
 			}));
 		}
 
@@ -287,65 +234,25 @@ function BillPage() {
 		clearErrors('payerPayments');
 	}
 
-	function handleSplitPaymentChange(id, inputValue, type) {
-		// number
-		const value = Number(inputValue);
-
+	function handleSplitPaymentChange(id, value, type) {
 		if (type === 'equalSplit') {
-			// 紀錄即時的 checked 狀態
-			if (!selectedMemberRef.current.includes(id)) {
-				selectedMemberRef.current.push(id);
+			// 更新紀錄哪些成員 isSelected
+			if (!selectedSplitMemberRef.current.includes(id)) {
+				selectedSplitMemberRef.current.push(id);
 			} else {
-				const inputIdIndex = selectedMemberRef.current.indexOf(id);
-				selectedMemberRef.current.splice(inputIdIndex, 1);
+				const inputIdIndex = selectedSplitMemberRef.current.indexOf(id);
+				selectedSplitMemberRef.current.splice(inputIdIndex, 1);
 			}
 
-			// 計算選中的成員數量 number
-			const selectedMemberCount = selectedMemberRef.current.length;
-
-			// 計算分帳金額
-			let splitAmount = 0;
-			let remainderAmount = 0;
-			if (value !== 0 && selectedMemberCount !== 0) {
-				splitAmount = round(value / selectedMemberCount, 2);
-
-				if (value - Number(splitAmount) * selectedMemberCount !== 0) {
-					remainderAmount = round(value - Number(splitAmount) * selectedMemberCount, 2);
-				}
-			}
-
-			// 找到最後一個有被選中的 memberId 要做餘額分配 string || undefined
-			// const lastSelectedMember = selectedMemberRef.current[selectedMemberRef.current.length - 1];
-
-			// 先更新所有已選中成員的金額
-			Object.entries(splitPayments).forEach(([memberId, item]) => {
-				if (item.isSelected === true) {
-					setSplitPayments((prev) => ({
-						...prev,
-						[memberId]: {
-							amount: round(splitAmount, 2),
-							isSelected: true,
-						},
-					}));
-				}
-			});
-
-			// 更新合併此次收到的資料
-			setSplitPayments((prev) => ({
-				...prev,
-				[id]: {
-					amount:
-						prev[id] && Number(prev[id].amount) !== 0
-							? '0.00'
-							: round(Number(splitAmount) + Number(remainderAmount), 2), // 如果平均分配除不盡的話將餘額分配給最後選到的人
-					isSelected: prev[id] && prev[id].isSelected === true ? false : true,
-				},
-			}));
-			// exactSplit
+			updateEqualSplitOrSinglePayerData('splitPayments', value, 'equalSplit');
+			// type === 'exactSplit'
 		} else {
-			setSplitPayments((prev) => ({
+			setBillData((prev) => ({
 				...prev,
-				[id]: { amount: round(value, 2) || 0, isSelected: false },
+				splitPayments: {
+					...prev.splitPayments,
+					[id]: { amount: round(value, 2) || '0.00', isSelected: false },
+				},
 			}));
 		}
 
@@ -353,26 +260,100 @@ function BillPage() {
 		clearErrors('splitPayments');
 	}
 
-	// 測試結果用
+	function calculateRate(inputDividend, inputDivisor) {
+		const dividend = Number(inputDividend);
+		const divisor = Number(inputDivisor);
+
+		const invalidCalculation = dividend === 0 || divisor === 0;
+
+		if (invalidCalculation) {
+			setBillData((prev) => ({
+				...prev,
+				rate: '',
+			}));
+		} else {
+			setBillData((prev) => ({
+				...prev,
+				rate: round(dividend / divisor, 3),
+			}));
+		}
+	}
+
+	function updateEqualSplitOrSinglePayerData(fieldName, inputValue, type) {
+		setBillData((prev) => {
+			const prevData = { ...prev[fieldName] };
+			const updatedData = Object.keys(prevData).reduce((acc, key) => {
+				const value = Number(inputValue);
+
+				// 平均分攤
+				if (type === 'equalSplit') {
+					// 計算選中的成員數量
+					const selectedMemberCount = selectedSplitMemberRef.current.length;
+					// 得到最後一位被選中的成員要做餘額分配
+					const lastSelectedMember =
+						selectedSplitMemberRef.current[selectedSplitMemberRef.current.length - 1];
+
+					// 計算分帳金額
+					let splitAmount = 0;
+					let remainderAmount = 0;
+					if (value !== 0 && selectedMemberCount !== 0) {
+						splitAmount = round(value / selectedMemberCount, 2);
+						if (value - splitAmount * selectedMemberCount !== 0) {
+							remainderAmount = round(value - Number(splitAmount) * selectedMemberCount, 2);
+						}
+					}
+					// 如果是 selected 的成員同時又是最後一個選中的成員，做金額更新 + 餘額分配
+					if (selectedSplitMemberRef.current.includes(key) && key === lastSelectedMember) {
+						acc[key] = {
+							amount: round(Number(splitAmount) + Number(remainderAmount), 2),
+							isSelected: true,
+						};
+						// 如果是 selected 的成員，做金額更新
+					} else if (selectedSplitMemberRef.current.includes(key)) {
+						acc[key] = { amount: round(splitAmount, 2), isSelected: true };
+						// 如果不是 selected 的成員，金額為 0
+					} else {
+						acc[key] = { amount: '0.00', isSelected: false };
+					}
+				}
+
+				// 單人付款
+				if (type === 'singlePayer') {
+					if (selectedPayerMemberRef.current === key) {
+						acc[key] = { amount: round(value, 2), isSelected: true };
+					} else {
+						acc[key] = { amount: '0.00', isSelected: false };
+					}
+				}
+
+				return acc;
+			}, {});
+			return { ...prev, [fieldName]: updatedData };
+		});
+	}
+
+	// console.log('billData', billData);
+
+	// 測試結果
 	function handleButtonClick() {
 		// 錯誤處理
-		if (billDate === '') {
+		if (billData.billDate === '') {
 			handleErrors('billDate', '請選擇消費日期');
 		}
 
-		if (billTitle.trim() === '') {
+		if (billData.billTitle.trim() === '') {
 			handleErrors('billTitle', '消費品項不得為空白');
 		}
 
-		if (localExpense === '' || localExpense === '0') {
+		if (Number(billData.localExpense) === 0) {
 			handleErrors('localExpense', '當地消費金額不得為空白或 0');
 		}
 
-		if (actualExpense === '' || actualExpense === '0') {
+		if (Number(billData.actualExpense) === 0) {
 			handleErrors('actualExpense', '實際帳單金額不得為空白或 0');
 		}
 
-		if (rate === '' || rate === '0') {
+		if (Number(billData.rate) === 0) {
 			handleErrors('rate', '匯率不得為空白或 0');
 		}
 
@@ -384,63 +365,84 @@ function BillPage() {
 			handleErrors('splitPayments', '請分配帳款');
 		}
 
-		if (
-			billDate === '' ||
-			billTitle.trim() === '' ||
-			localExpense === '' ||
-			localExpense === '0' ||
-			actualExpense === '' ||
-			actualExpense === '0' ||
-			rate === '' ||
-			rate === '0' ||
+		const invalidInputs =
+			billData.billDate === '' ||
+			billData.billTitle.trim() === '' ||
+			Number(billData.localExpense) === 0 ||
+			Number(billData.actualExpense) === 0 ||
+			Number(billData.rate) === 0 ||
 			payerPaymentsUnSettledAmount > 0 ||
-			splitPaymentsUnSettledAmount > 0
-		) {
-			return;
-		}
+			splitPaymentsUnSettledAmount > 0;
 
-		// console.log('billDate', billDate);
-		// console.log('billTitle', billTitle);
-		// console.log('localExpense', localExpense);
-		// console.log('localExpenseCurrency', localExpenseCurrency);
-		// console.log('actualExpense', actualExpense);
-		// console.log('actualExpenseCurrency', actualExpenseCurrency);
-		// console.log('rate', rate);
-		// console.log('payer', payer);
-		// console.log('split', split);
-		console.log('payerPayments', payerPayments);
-		console.log('splitPayments', splitPayments);
+		if (invalidInputs) return;
 
 		// 計算債務關係
-		const debts = {};
-		for (const payerId in payerPayments) {
-			for (const splitId in splitPayments) {
-				// 分帳金額	> 0 && 該付的大於支出的 才有可能欠別人錢
-				if (
-					splitId !== payerId &&
-					splitPayments[splitId].amount > 0 &&
-					splitPayments[splitId].amount - payerPayments[splitId].amount > 0
-				) {
-					// 表示我總共欠大家的錢
-					const shortage = splitPayments[splitId].amount - payerPayments[splitId].amount;
-					// 如果他的付款金額 > 分帳金額，表示我可能人欠他錢
-					if (payerPayments[payerId].amount - splitPayments[payerId].amount > 0) {
-						// 表示他被欠的錢
-						const debt = payerPayments[payerId].amount - splitPayments[payerId].amount;
-						debts[splitId] = debts[splitId] || {};
-						// 如果他被欠的錢大於我總共欠的錢，我就是欠他我全部欠的錢
-						if (debt >= shortage) {
-							debts[splitId][payerId] = round(shortage / rate, 2);
-						} else {
-							// 如果他被欠的錢小於我總共欠的錢，我就是欠他他被欠的錢
-							debts[splitId][payerId] = round(debt / rate, 2);
-						}
-					}
+		const updatedDebts = calculateDebts();
+
+		console.log('updatedDebts', updatedDebts);
+
+		setBillData((prev) => ({
+			...prev,
+			debts: updatedDebts,
+		}));
+	}
+
+	function calculateDebts() {
+		let updatedDebts = {};
+
+		for (const payerId in billData.payerPayments) {
+			for (const splitId in billData.splitPayments) {
+				// 潛在債務人
+				const potentialDebtor =
+					(Number(billData.splitPayments[splitId].amount) > 0 && splitId !== payerId) ||
+					(Number(billData.splitPayments[splitId].amount) -
+						Number(billData.payerPayments[splitId].amount) >
+						0 &&
+						splitId !== payerId);
+
+				if (!potentialDebtor) continue;
+
+				// 債務人債款
+				const debtorDebts = round(
+					Number(billData.splitPayments[splitId].amount) -
+						Number(billData.payerPayments[splitId].amount),
+					2,
+				);
+
+				// 潛在債權人
+				const potentialCreditor =
+					Number(billData.payerPayments[payerId].amount) -
+						Number(billData.splitPayments[payerId].amount) >
+					0;
+
+				if (!potentialCreditor) continue;
+
+				// 債權人債款
+				const creditorDebts = round(
+					Number(billData.payerPayments[payerId].amount) -
+						Number(billData.splitPayments[payerId].amount),
+					2,
+				);
+
+				// 建立債務關係
+				updatedDebts[splitId] = updatedDebts[splitId] || {};
+
+				// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
+				if (Number(creditorDebts) >= Number(debtorDebts)) {
+					updatedDebts[splitId][payerId] = {
+						amount: round(Number(debtorDebts) / Number(billData.rate), 2),
+						currency: billData.actualExpenseCurrency,
+					};
+				} else {
+					// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
+					updatedDebts[splitId][payerId] = {
+						amount: round(Number(creditorDebts) / Number(billData.rate), 2),
+						currency: billData.actualExpenseCurrency,
+					};
 				}
 			}
 		}
-
-		console.log('debts', debts);
+		return updatedDebts;
 	}
 
 	return (
@@ -450,7 +452,7 @@ function BillPage() {
 					className={style.billDate}
 					title='消費日期'
 					type='date'
-					value={billDate}
+					value={billData.billDate}
 					onChange={(e) => handleBillDateChange(e.target.value)}
 					error={errors.billDate}
 				/>
@@ -459,7 +461,7 @@ function BillPage() {
 					title='品項'
 					type='text'
 					placeholder='請輸入消費品項'
-					value={billTitle}
+					value={billData.billTitle}
 					onChange={(e) => handleBillTitleChange(e.target.value)}
 					error={errors.billTitle}
 				/>
@@ -468,13 +470,13 @@ function BillPage() {
 					title='當地消費金額'
 					type='number'
 					placeholder='請輸入當地消費金額'
-					value={localExpense}
+					value={billData.localExpense}
 					onChange={(e) => handleLocalExpenseChange(e.target.value)}
 					error={errors.localExpense}
 					suffix={
 						<Select
 							optionsData={currencyData}
-							value={localExpenseCurrency}
+							value={billData.localExpenseCurrency}
 							onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
 							suffix='true'
 						/>
@@ -485,13 +487,13 @@ function BillPage() {
 					title='實際帳單金額 (與匯率擇一填寫)'
 					type='number'
 					placeholder='請輸入實際金額'
-					value={actualExpense}
+					value={billData.actualExpense}
 					onChange={(e) => handleActualExpenseChange(e.target.value)}
 					error={errors.actualExpense}
 					suffix={
 						<Select
 							optionsData={currencyData}
-							value={actualExpenseCurrency}
+							value={billData.actualExpenseCurrency}
 							onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
 							suffix='true'
 						/>
@@ -502,7 +504,7 @@ function BillPage() {
 					title='匯率 (與實際金額擇一填寫)'
 					type='number'
 					placeholder='請輸入匯率'
-					value={rate}
+					value={billData.rate}
 					onChange={(e) => handleRateChange(e.target.value)}
 					error={errors.rate}
 				/>
@@ -513,36 +515,34 @@ function BillPage() {
 						{ key: 'single', value: '單人付款' },
 						{ key: 'multiple', value: '多人付款' },
 					]}
-					value={payer}
+					value={billData.payer}
 					onChange={(e) => handlePayerChange(e.target.value)}>
-					{payer === '單人付款' && (
+					{billData.payer === '單人付款' && (
 						<ExpenseDistribution
 							className={style.expenseDistributionForPayer}
 							inputType='radio'
 							inputName='singlePayer'
 							memberData={memberData}
-							localExpense={localExpense}
+							localExpense={billData.localExpense}
 							payer='single'
-							payments={payerPayments}
+							payments={billData.payerPayments}
 							onPaymentsChange={handlePayerPaymentChange}
 							error={errors.payerPayments}
-							sum={payerPaymentsSum}
 							unSettledAmount={payerPaymentsUnSettledAmount}
 						/>
 					)}
 
-					{payer === '多人付款' && (
+					{billData.payer === '多人付款' && (
 						<ExpenseDistribution
 							className={style.expenseDistributionForPayer}
 							inputType='checkbox'
 							inputName='multiplePayer'
 							memberData={memberData}
-							localExpense={localExpense}
+							localExpense={billData.localExpense}
 							payer='multiple'
-							payments={payerPayments}
+							payments={billData.payerPayments}
 							onPaymentsChange={handlePayerPaymentChange}
 							error={errors.payerPayments}
-							sum={payerPaymentsSum}
 							unSettledAmount={payerPaymentsUnSettledAmount}
 						/>
 					)}
@@ -554,33 +554,31 @@ function BillPage() {
 						{ key: 'equal', value: '平均分攤' },
 						{ key: 'exact', value: '各付各的' },
 					]}
-					value={split}
+					value={billData.split}
 					onChange={(e) => handleSplitChange(e.target.value)}>
-					{split === '平均分攤' && (
+					{billData.split === '平均分攤' && (
 						<ExpenseDistribution
 							className={style.expenseDistributionForSplit}
 							inputType='checkbox'
 							inputName='equalSplit'
 							memberData={memberData}
-							localExpense={localExpense}
-							payments={splitPayments}
+							localExpense={billData.localExpense}
+							payments={billData.splitPayments}
 							onPaymentsChange={handleSplitPaymentChange}
 							error={errors.splitPayments}
-							sum={splitPaymentsSum}
 							unSettledAmount={splitPaymentsUnSettledAmount}
 						/>
 					)}
-					{split === '各付各的' && (
+					{billData.split === '各付各的' && (
 						<ExpenseDistribution
 							className={style.expenseDistributionForSplit}
 							inputType='checkbox'
 							inputName='exactSplit'
 							memberData={memberData}
-							localExpense={localExpense}
-							payments={splitPayments}
+							localExpense={billData.localExpense}
+							payments={billData.splitPayments}
 							onPaymentsChange={handleSplitPaymentChange}
 							error={errors.splitPayments}
-							sum={splitPaymentsSum}
 							unSettledAmount={splitPaymentsUnSettledAmount}
 						/>
 					)}
