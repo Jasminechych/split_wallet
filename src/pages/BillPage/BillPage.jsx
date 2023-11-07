@@ -16,6 +16,16 @@ const memberData = [
 	{ memberId: '3', memberName: 'Bill' },
 ];
 
+const payerOptionsData = [
+	{ key: 'single', value: '單人付款' },
+	{ key: 'multiple', value: '多人付款' },
+];
+
+const splitOptionsData = [
+	{ key: 'equal', value: '平均分攤' },
+	{ key: 'exact', value: '各付各的' },
+];
+
 function BillPage() {
 	const [billData, setBillData] = useState({
 		billDate: '',
@@ -45,17 +55,18 @@ function BillPage() {
 
 	useEffect(() => {
 		// 初始化資料格式
-		const data = {};
-		memberData.map(({ memberId }) => {
-			data[memberId] = { amount: '0.00', isSelected: false };
-		});
+		const memberDistributionData = memberData.reduce((acc, { memberId }) => {
+			acc[memberId] = { amount: '0.00', isSelected: false };
+			return acc;
+		}, {});
+
 		setBillData((prev) => ({
 			...prev,
 			// 依 setup 待修正
 			localExpenseCurrency: 'TWD',
 			actualExpenseCurrency: 'TWD',
-			payerPayments: data,
-			splitPayments: data,
+			payerPayments: memberDistributionData,
+			splitPayments: memberDistributionData,
 		}));
 	}, []);
 
@@ -117,13 +128,15 @@ function BillPage() {
 		}
 
 		// 對 payerPayments 的更新
-		if (billData.payer === '單人付款' && selectedPayerMemberRef !== '') {
+		if (billData.payer === '單人付款') {
 			updateEqualSplitOrSinglePayerData('payerPayments', value, 'singlePayer');
 		}
 
 		// 對 rate 的更新
 		if (Number(billData.actualExpense) !== 0) {
 			calculateRate(value, billData.actualExpense);
+			// 清除錯誤訊息
+			clearErrors('rate');
 		}
 	}
 
@@ -149,9 +162,11 @@ function BillPage() {
 		clearErrors('actualExpense');
 
 		// 對 rate 的更新
-		calculateRate(billData.localExpense, value);
-		// 清除錯誤訊息
-		clearErrors('rate');
+		if (Number(billData.localExpense) !== 0) {
+			calculateRate(billData.localExpense, value);
+			// 清除錯誤訊息
+			clearErrors('rate');
+		}
 	}
 
 	function handleActualExpenseCurrencyChange(value) {
@@ -176,16 +191,15 @@ function BillPage() {
 		clearErrors('rate');
 
 		// 對實 actualExpense 的更新
-		setBillData((prev) => ({
-			...prev,
-			actualExpense:
-				Number(value) === 0 || Number(billData.localExpense) === 0
-					? ''
-					: round(billData.localExpense / parseFloat(value), 2),
-		}));
+		if (Number(billData.localExpense) !== 0 && Number(value) !== 0) {
+			setBillData((prev) => ({
+				...prev,
+				actualExpense: round(Number(billData.localExpense) / Number(value), 2),
+			}));
 
-		// 清除錯誤訊息
-		clearErrors('actualExpense');
+			// 清除錯誤訊息
+			clearErrors('actualExpense');
+		}
 	}
 
 	function handlePayerChange(value) {
@@ -198,6 +212,7 @@ function BillPage() {
 			}, {}),
 		}));
 
+		// 清除已選中的成員
 		selectedPayerMemberRef.current = '';
 	}
 
@@ -211,6 +226,7 @@ function BillPage() {
 			}, {}),
 		}));
 
+		// 清除已選中的成員
 		selectedSplitMemberRef.current = [];
 	}
 
@@ -245,7 +261,6 @@ function BillPage() {
 			}
 
 			updateEqualSplitOrSinglePayerData('splitPayments', value, 'equalSplit');
-			// type === 'exactSplit'
 		} else {
 			setBillData((prev) => ({
 				...prev,
@@ -264,9 +279,7 @@ function BillPage() {
 		const dividend = Number(inputDividend);
 		const divisor = Number(inputDivisor);
 
-		const invalidCalculation = dividend === 0 || divisor === 0;
-
-		if (invalidCalculation) {
+		if (dividend === 0 || divisor === 0) {
 			setBillData((prev) => ({
 				...prev,
 				rate: '',
@@ -276,6 +289,9 @@ function BillPage() {
 				...prev,
 				rate: round(dividend / divisor, 3),
 			}));
+
+			// 清除錯誤訊息
+			clearErrors('rate');
 		}
 	}
 
@@ -501,77 +517,38 @@ function BillPage() {
 				<Select
 					className={style.payer}
 					title='誰付錢'
-					optionsData={[
-						{ key: 'single', value: '單人付款' },
-						{ key: 'multiple', value: '多人付款' },
-					]}
+					optionsData={payerOptionsData}
 					value={billData.payer}
 					onChange={(e) => handlePayerChange(e.target.value)}>
-					{billData.payer === '單人付款' && (
-						<ExpenseDistribution
-							className={style.expenseDistributionForPayer}
-							inputType='radio'
-							inputName='singlePayer'
-							memberData={memberData}
-							localExpense={billData.localExpense}
-							payer='single'
-							payments={billData.payerPayments}
-							onPaymentsChange={handlePayerPaymentChange}
-							error={errors.payerPayments}
-							unSettledAmount={payerPaymentsUnSettledAmount}
-						/>
-					)}
-
-					{billData.payer === '多人付款' && (
-						<ExpenseDistribution
-							className={style.expenseDistributionForPayer}
-							inputType='checkbox'
-							inputName='multiplePayer'
-							memberData={memberData}
-							localExpense={billData.localExpense}
-							payer='multiple'
-							payments={billData.payerPayments}
-							onPaymentsChange={handlePayerPaymentChange}
-							error={errors.payerPayments}
-							unSettledAmount={payerPaymentsUnSettledAmount}
-						/>
-					)}
+					<ExpenseDistribution
+						className={style.expenseDistributionForPayer}
+						inputType={billData.payer === '單人付款' ? 'radio' : ''}
+						inputName={billData.payer === '單人付款' ? 'singlePayer' : 'multiplePayer'}
+						memberData={memberData}
+						localExpense={billData.localExpense}
+						payments={billData.payerPayments}
+						onPaymentsChange={handlePayerPaymentChange}
+						error={errors.payerPayments}
+						unSettledAmount={payerPaymentsUnSettledAmount}
+					/>
 				</Select>
 				<Select
 					className={style.split}
 					title='分給誰'
-					optionsData={[
-						{ key: 'equal', value: '平均分攤' },
-						{ key: 'exact', value: '各付各的' },
-					]}
+					optionsData={splitOptionsData}
 					value={billData.split}
 					onChange={(e) => handleSplitChange(e.target.value)}>
-					{billData.split === '平均分攤' && (
-						<ExpenseDistribution
-							className={style.expenseDistributionForSplit}
-							inputType='checkbox'
-							inputName='equalSplit'
-							memberData={memberData}
-							localExpense={billData.localExpense}
-							payments={billData.splitPayments}
-							onPaymentsChange={handleSplitPaymentChange}
-							error={errors.splitPayments}
-							unSettledAmount={splitPaymentsUnSettledAmount}
-						/>
-					)}
-					{billData.split === '各付各的' && (
-						<ExpenseDistribution
-							className={style.expenseDistributionForSplit}
-							inputType='checkbox'
-							inputName='exactSplit'
-							memberData={memberData}
-							localExpense={billData.localExpense}
-							payments={billData.splitPayments}
-							onPaymentsChange={handleSplitPaymentChange}
-							error={errors.splitPayments}
-							unSettledAmount={splitPaymentsUnSettledAmount}
-						/>
-					)}
+					<ExpenseDistribution
+						className={style.expenseDistributionForSplit}
+						inputType={billData.split === '平均分攤' ? 'checkbox' : ''}
+						inputName={billData.split === '平均分攤' ? 'equalSplit' : 'exactSplit'}
+						memberData={memberData}
+						localExpense={billData.localExpense}
+						payments={billData.splitPayments}
+						onPaymentsChange={handleSplitPaymentChange}
+						error={errors.splitPayments}
+						unSettledAmount={splitPaymentsUnSettledAmount}
+					/>
 				</Select>
 			</div>
 		</PageTemplate>

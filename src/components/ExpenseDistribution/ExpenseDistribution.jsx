@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import style from 'src/components/ExpenseDistribution/ExpenseDistribution.module.scss';
 
 function ExpenseDistribution({
@@ -16,47 +15,32 @@ function ExpenseDistribution({
 		<div className={`${className} ${style.memberList}`}>
 			{memberData.map(({ memberId, memberName }) => {
 				return (
-					<Fragment key={memberId}>
-						{(inputName === 'singlePayer' || inputName === 'equalSplit') && (
-							<div key={memberId}>
-								<label
-									htmlFor={`${memberId}_${inputName}`}
-									className={`${style.memberGroup} ${
-										payments[memberId] && payments[memberId].isSelected === true
-											? style.selected
-											: ''
-									}`}>
-									<div className={style.nameWrapper}>
-										<input
-											id={`${memberId}_${inputName}`}
-											type={inputType}
-											name={inputName}
-											onChange={() => onPaymentsChange(memberId, localExpense, inputName)}
-										/>
-										{memberName}
-									</div>
-									<div className={style.paymentWrapper}>
-										<p>$</p>
-										<p className={style.numberInput}>
-											{payments[memberId] && payments[memberId].isSelected === true
-												? payments[memberId].amount
-												: '0.00'}
-										</p>
-									</div>
-								</label>
+					<div key={memberId}>
+						<label
+							htmlFor={`${memberId}_${inputName}`}
+							className={`${style.memberGroup} ${
+								payments[memberId] && payments[memberId].isSelected === true ? style.selected : ''
+							}`}>
+							<div className={style.nameWrapper}>
+								{(inputName === 'singlePayer' || inputName === 'equalSplit') && (
+									<input
+										id={`${memberId}_${inputName}`}
+										type={inputType}
+										name={inputName}
+										onChange={() => onPaymentsChange(memberId, localExpense, inputName)}
+									/>
+								)}
+								<p>{memberName}</p>
 							</div>
-						)}
-						{(inputName === 'multiplePayer' || inputName === 'exactSplit') && (
-							<div
-								key={memberId}
-								className={`${style.memberGroup} ${
-									payments[memberId] && payments[memberId].isSelected === true ? style.selected : ''
-								}`}>
-								<div className={style.nameWrapper}>
-									<p>{memberName}</p>
-								</div>
-								<div className={style.paymentWrapper}>
-									<p>$</p>
+							<div className={style.paymentWrapper}>
+								<p>$</p>
+								{inputName === 'singlePayer' || inputName === 'equalSplit' ? (
+									<p className={style.numberInput}>
+										{payments[memberId] && payments[memberId].isSelected === true
+											? payments[memberId].amount
+											: '0.00'}
+									</p>
+								) : (
 									<input
 										className={style.numberInput}
 										type='number'
@@ -64,10 +48,10 @@ function ExpenseDistribution({
 										placeholder='0.00'
 										onChange={(e) => onPaymentsChange(memberId, e.target.value, inputType)}
 									/>
-								</div>
+								)}
 							</div>
-						)}
-					</Fragment>
+						</label>
+					</div>
 				);
 			})}
 			{/* 顯示未非配金額狀態 */}
