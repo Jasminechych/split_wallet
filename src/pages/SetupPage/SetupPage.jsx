@@ -9,6 +9,8 @@ import { Select } from 'src/components/Select/Select';
 import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
+import db from 'src/libraries/utils/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 function SetupPage() {
 	const [groupName, setGroupName] = useState('');
@@ -16,12 +18,13 @@ function SetupPage() {
 	const [groupMembersList, setGroupMembersList] = useState([]);
 	const [localExpenseCurrency, setLocalExpenseCurrency] = useState('TWD');
 	const [actualExpenseCurrency, setActualExpenseCurrency] = useState('TWD');
-	// const [errors, setErrors] = useState({});
 
+	// context
 	const { handleGroupInfoChange } = useGroupInfo();
+
 	const navigate = useNavigate();
 
-	// 使用錯誤訊息管理
+	// custom hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
 	function handleGroupNameChange(e) {
@@ -75,7 +78,7 @@ function SetupPage() {
 		});
 	}
 
-	function handleSubmit() {
+	async function handleSubmit() {
 		// 錯誤處理，群組名稱
 		if (!groupName.trim().length) {
 			handleErrors('groupName', '群組名稱不得為空白');
@@ -96,7 +99,19 @@ function SetupPage() {
 			actualExpenseCurrency: actualExpenseCurrency,
 		});
 
-		navigate('/bill');
+		try {
+			const docRef = await addDoc(collection(db, 'group'), {
+				groupName: groupName,
+				groupMembersList: groupMembersList,
+				localExpenseCurrency: localExpenseCurrency,
+				actualExpenseCurrency: actualExpenseCurrency,
+			});
+			console.log('Document written with ID: ', docRef.id);
+
+			navigate('/bill');
+		} catch (e) {
+			console.error('Error adding document: ', e);
+		}
 	}
 
 	return (
