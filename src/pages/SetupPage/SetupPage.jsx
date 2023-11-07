@@ -6,32 +6,52 @@ import { Input } from 'src/components/Input/Input';
 import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
 import { Select } from 'src/components/Select/Select';
-import { useGroupInfo } from 'src/contexts/GroupInfoContext';
+// import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import db from 'src/libraries/utils/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 function SetupPage() {
-	const [groupName, setGroupName] = useState('');
+	const [groupData, setGroupData] = useState({
+		groupName: '',
+		groupMembersList: [],
+		localExpenseCurrency: '',
+		actualExpenseCurrency: '',
+	});
+
 	const [groupMember, setGroupMember] = useState('');
-	const [groupMembersList, setGroupMembersList] = useState([]);
-	const [localExpenseCurrency, setLocalExpenseCurrency] = useState('TWD');
-	const [actualExpenseCurrency, setActualExpenseCurrency] = useState('TWD');
 
 	// context
-	const { handleGroupInfoChange } = useGroupInfo();
+	// const { handleGroupInfoChange } = useGroupInfo();
 
 	const navigate = useNavigate();
 
-	// custom hook
+	// 錯誤訊息管理 Hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
-	function handleGroupNameChange(e) {
-		setGroupName(e);
+	function handleGroupNameChange(value) {
+		setGroupData((prev) => ({
+			...prev,
+			groupName: value,
+		}));
 
 		// 清除錯誤訊息
 		clearErrors('groupName');
+	}
+
+	function handleLocalExpenseCurrencyChange(value) {
+		setGroupData((prev) => ({
+			...prev,
+			localExpenseCurrency: value,
+		}));
+	}
+
+	function handleActualExpenseCurrencyChange(value) {
+		setGroupData((prev) => ({
+			...prev,
+			actualExpenseCurrency: value,
+		}));
 	}
 
 	function handleGroupMemberChange(e) {
@@ -41,71 +61,53 @@ function SetupPage() {
 		clearErrors('groupMember');
 	}
 
-	function handleAddClick(groupMember) {
+	function handleAddMember(value) {
 		// 錯誤處理，防止空白的成員名稱
-		if (!groupMember.trim().length) {
+		if (!value.trim().length) {
 			handleErrors('groupMember', '群組成員名稱不得為空白');
 			return;
 		}
 
 		// 錯誤處理，防止重複的成員名稱
-		if (groupMembersList.includes(groupMember.trim())) {
+		if (groupData.groupMembersList.includes(value.trim())) {
 			handleErrors('groupMember', '請輸入非重複的成員名稱');
 			return;
 		}
 
-		// 去除空白後儲存成員名稱
-		setGroupMembersList((prev) => [groupMember.trim(), ...prev]);
+		// 去除前後空白後儲存成員名稱
+		setGroupData((prev) => ({
+			...prev,
+			groupMembersList: [value.trim(), ...prev.groupMembersList],
+		}));
+
+		// 清除輸入的成員名稱
 		setGroupMember('');
 
 		// 清除錯誤訊息
 		clearErrors('groupMember');
 	}
 
-	function handleLocalExpenseCurrencyChange(value) {
-		setLocalExpenseCurrency(value);
-	}
-
-	function handleActualExpenseCurrencyChange(value) {
-		setActualExpenseCurrency(value);
-	}
-
 	function handleDeleteMember(id) {
-		setGroupMembersList((prev) => {
-			return prev.filter((member) => {
-				return member !== id;
-			});
-		});
+		setGroupData((prev) => ({
+			...prev,
+			groupMembersList: prev.groupMembersList.filter((member) => member !== id),
+		}));
 	}
 
 	async function handleSubmit() {
-		// 錯誤處理，群組名稱
-		if (!groupName.trim().length) {
+		// 錯誤處理
+		if (!groupData.groupName.trim().length) {
 			handleErrors('groupName', '群組名稱不得為空白');
 		}
 
-		// 錯誤處理，群組成員
-		if (!groupMembersList.length) {
+		if (!groupData.groupMembersList.length) {
 			handleErrors('groupMember', '請至少輸入一位群組成員');
 		}
 
-		if (groupName === '' || !groupMembersList.length) return;
-
-		console.log('execute');
-		handleGroupInfoChange({
-			groupName: groupName,
-			groupMembersList: groupMembersList,
-			localExpenseCurrency: localExpenseCurrency,
-			actualExpenseCurrency: actualExpenseCurrency,
-		});
+		if (groupData.groupName === '' || !groupData.groupMembersList.length) return;
 
 		try {
-			const docRef = await addDoc(collection(db, 'group'), {
-				groupName: groupName,
-				groupMembersList: groupMembersList,
-				localExpenseCurrency: localExpenseCurrency,
-				actualExpenseCurrency: actualExpenseCurrency,
-			});
+			const docRef = await addDoc(collection(db, 'group'), groupData);
 			console.log('Document written with ID: ', docRef.id);
 
 			navigate('/bill');
@@ -123,21 +125,21 @@ function SetupPage() {
 						title='群組名稱'
 						type='text'
 						placeholder='請輸入群組名稱'
-						value={groupName}
+						value={groupData.groupName}
 						onChange={(e) => handleGroupNameChange(e.target.value)}
 						error={errors.groupName}
 					/>
 					<Select
 						title='當地消費貨幣'
 						optionsData={currencyData}
-						value={localExpenseCurrency}
+						value={groupData.localExpenseCurrency}
 						onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
 						error={errors.localExpenseCurrency}
 					/>
 					<Select
 						title='實際帳單貨幣'
 						optionsData={currencyData}
-						value={actualExpenseCurrency}
+						value={groupData.actualExpenseCurrency}
 						onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
 						error={errors.actualExpenseCurrency}
 					/>
@@ -147,11 +149,11 @@ function SetupPage() {
 						placeholder='請輸入群組成員'
 						value={groupMember}
 						onChange={(e) => handleGroupMemberChange(e.target.value)}
-						suffix={<Add cursor='pointer' onClick={() => handleAddClick(groupMember)} />}
+						suffix={<Add cursor='pointer' onClick={() => handleAddMember(groupMember)} />}
 						error={errors.groupMember}
 					/>
 					<MemberList
-						groupMembersList={groupMembersList}
+						groupMembersList={groupData.groupMembersList}
 						onClick={(member) => handleDeleteMember(member)}
 					/>
 				</section>
