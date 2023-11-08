@@ -44,7 +44,7 @@ function BillPage() {
 		debts: {},
 	});
 
-	const [memberData, setMemberData] = useState([])
+	const [memberData, setMemberData] = useState([]);
 
 	// 紀錄當前 選到的 payer & split members
 	const selectedSplitMemberRef = useRef([]);
