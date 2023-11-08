@@ -6,7 +6,7 @@ import { Input } from 'src/components/Input/Input';
 import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
 import { Select } from 'src/components/Select/Select';
-// import { useGroupInfo } from 'src/contexts/GroupInfoContext';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import db from 'src/libraries/utils/firebase';
@@ -23,7 +23,7 @@ function SetupPage() {
 	const [groupMember, setGroupMember] = useState('');
 
 	// context
-	// const { handleGroupInfoChange } = useGroupInfo();
+	const { handleGroupInfoChange } = useGroupInfo();
 
 	const navigate = useNavigate();
 
@@ -109,6 +109,7 @@ function SetupPage() {
 		try {
 			const docRef = await addDoc(collection(db, 'group'), groupData);
 			console.log('Document written with ID: ', docRef.id);
+			handleGroupInfoChange(docRef.id);
 
 			navigate('/bill');
 		} catch (e) {

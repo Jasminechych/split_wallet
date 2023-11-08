@@ -9,12 +9,14 @@ import { checkValidNumberInput } from 'src/libraries/utils/checkValidNumberInput
 // import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
+import db from 'src/libraries/utils/firebase';
+import { getDoc, doc } from 'firebase/firestore';
 
-const memberData = [
-	{ memberId: '1', memberName: 'AnnaGGGG' },
-	{ memberId: '2', memberName: 'Tim' },
-	{ memberId: '3', memberName: 'Bill' },
-];
+// const memberData = [
+// 	{ memberId: '1', memberName: 'AnnaGGGG' },
+// 	{ memberId: '2', memberName: 'Tim' },
+// 	{ memberId: '3', memberName: 'Bill' },
+// ];
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -42,11 +44,14 @@ function BillPage() {
 		debts: {},
 	});
 
+	const [memberData, setMemberData] = useState([])
+
 	// 紀錄當前 選到的 payer & split members
 	const selectedSplitMemberRef = useRef([]);
 	const selectedPayerMemberRef = useRef('');
 
 	// const { groupInfo } = useGroupInfo();
+	// console.log('groupInfo', groupInfo);
 
 	// 錯誤訊息管理 Hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
@@ -54,20 +59,48 @@ function BillPage() {
 	console.log('渲染 BillPage');
 
 	useEffect(() => {
-		// 初始化資料格式
-		const memberDistributionData = memberData.reduce((acc, { memberId }) => {
-			acc[memberId] = { amount: '0.00', isSelected: false };
-			return acc;
-		}, {});
+		const fetchGroupData = async () => {
+			try {
+				const docRef = doc(db, 'group', 'ALz1VAzWFtbDG3hKPHLQ');
+				const getDocData = await getDoc(docRef);
+				const data = getDocData.data();
+				const dataMemberList = data.groupMembersList.reduce((acc, id) => {
+					acc[id] = { amount: '0.00', isSelected: false };
+					return acc;
+				}, {});
 
-		setBillData((prev) => ({
-			...prev,
-			// 依 setup 待修正
-			localExpenseCurrency: 'TWD',
-			actualExpenseCurrency: 'TWD',
-			payerPayments: memberDistributionData,
-			splitPayments: memberDistributionData,
-		}));
+				console.log('dataMemberList', dataMemberList);
+
+				setBillData((prev) => ({
+					...prev,
+					localExpenseCurrency: data.localExpenseCurrency,
+					actualExpenseCurrency: data.actualExpenseCurrency,
+					payerPayments: dataMemberList,
+					splitPayments: dataMemberList,
+				}));
+
+				setMemberData(data.groupMembersList);
+			} catch (e) {
+				console.error('Error fetching group data:', e);
+			}
+		};
+
+		fetchGroupData();
+
+		// 初始化資料格式
+		// const memberDistributionData = memberData.reduce((acc, { memberId }) => {
+		// 	acc[memberId] = { amount: '0.00', isSelected: false };
+		// 	return acc;
+		// }, {});
+
+		// setBillData((prev) => ({
+		// 	...prev,
+		// 	// 依 setup 待修正
+		// 	localExpenseCurrency: 'TWD',
+		// 	actualExpenseCurrency: 'TWD',
+		// 	payerPayments: memberDistributionData,
+		// 	splitPayments: memberDistributionData,
+		// }));
 	}, []);
 
 	//  payerPayments 計算未分配金額
