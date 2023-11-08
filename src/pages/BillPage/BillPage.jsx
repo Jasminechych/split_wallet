@@ -10,7 +10,8 @@ import { checkValidNumberInput } from 'src/libraries/utils/checkValidNumberInput
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import db from 'src/libraries/utils/firebase';
-import { getDoc, doc } from 'firebase/firestore';
+import { getDoc, doc, addDoc, collection } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -35,27 +36,32 @@ function BillPage() {
 		split: '平均分攤',
 		payerPayments: {},
 		splitPayments: {},
-		debts: {},
 	});
 
 	const [memberData, setMemberData] = useState([]);
+	const [isLoading, setIsLoading] = useState(false);
 
 	// 紀錄當前 選到的 payer & split members
 	const selectedSplitMemberRef = useRef([]);
 	const selectedPayerMemberRef = useRef('');
 
 	// const { groupInfo } = useGroupInfo();
-	// console.log('groupInfo', groupInfo);
+
+	const tempId = '7SDElmh9lQhcBWjIYz18';
 
 	// 錯誤訊息管理 Hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
+	const navigate = useNavigate();
+
 	console.log('渲染 BillPage');
 
 	useEffect(() => {
+		setIsLoading(true);
 		const fetchGroupData = async () => {
 			try {
-				const docRef = doc(db, 'group', 'Piq4T5z5wUVNJaDvQJsi');
+				// 測試用
+				const docRef = doc(db, 'group', tempId);
 				const getDocData = await getDoc(docRef);
 				const data = getDocData.data();
 				const dataMemberList = data.groupMembersList.reduce((acc, member) => {
@@ -72,6 +78,8 @@ function BillPage() {
 				}));
 
 				setMemberData(data.groupMembersList);
+
+				setIsLoading(false);
 			} catch (e) {
 				console.error('Error fetching group data:', e);
 			}
@@ -358,55 +366,55 @@ function BillPage() {
 		});
 	}
 
-	function calculateDebts() {
-		let updatedDebts = {};
+	// function calculateDebts() {
+	// 	let updatedDebts = {};
 
-		for (const creditorId in billData.payerPayments) {
-			for (const debtorId in billData.splitPayments) {
-				const debtorSplitPayment = Number(billData.splitPayments[debtorId].amount);
-				const debtorPayerPayment = Number(billData.payerPayments[debtorId].amount);
-				const creditorSplitPayment = Number(billData.splitPayments[creditorId].amount);
-				const creditorPayerPayment = Number(billData.payerPayments[creditorId].amount);
+	// 	for (const creditorId in billData.payerPayments) {
+	// 		for (const debtorId in billData.splitPayments) {
+	// 			const debtorSplitPayment = Number(billData.splitPayments[debtorId].amount);
+	// 			const debtorPayerPayment = Number(billData.payerPayments[debtorId].amount);
+	// 			const creditorSplitPayment = Number(billData.splitPayments[creditorId].amount);
+	// 			const creditorPayerPayment = Number(billData.payerPayments[creditorId].amount);
 
-				// 潛在債務人
-				const potentialDebtor =
-					debtorSplitPayment > 0 || debtorSplitPayment - debtorPayerPayment > 0;
+	// 			// 潛在債務人
+	// 			const potentialDebtor =
+	// 				debtorSplitPayment > 0 || debtorSplitPayment - debtorPayerPayment > 0;
 
-				if (!potentialDebtor || debtorId === creditorId) continue;
+	// 			if (!potentialDebtor || debtorId === creditorId) continue;
 
-				// 債務人債款
-				const debtorDebts = round(debtorSplitPayment - debtorPayerPayment, 2);
+	// 			// 債務人債款
+	// 			const debtorDebts = round(debtorSplitPayment - debtorPayerPayment, 2);
 
-				// 潛在債權人
-				const potentialCreditor = creditorPayerPayment - creditorSplitPayment > 0;
+	// 			// 潛在債權人
+	// 			const potentialCreditor = creditorPayerPayment - creditorSplitPayment > 0;
 
-				if (!potentialCreditor) continue;
+	// 			if (!potentialCreditor) continue;
 
-				// 債權人債款
-				const creditorDebts = round(creditorPayerPayment - creditorSplitPayment, 2);
+	// 			// 債權人債款
+	// 			const creditorDebts = round(creditorPayerPayment - creditorSplitPayment, 2);
 
-				// 建立債務關係
-				updatedDebts[debtorId] = updatedDebts[debtorId] || {};
+	// 			// 建立債務關係
+	// 			updatedDebts[debtorId] = updatedDebts[debtorId] || {};
 
-				// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
-				if (Number(creditorDebts) >= Number(debtorDebts)) {
-					updatedDebts[debtorId][creditorId] = {
-						amount: round(Number(debtorDebts) / Number(billData.rate), 2),
-						currency: billData.actualExpenseCurrency,
-					};
-				} else {
-					// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
-					updatedDebts[debtorId][creditorId] = {
-						amount: round(Number(creditorDebts) / Number(billData.rate), 2),
-						currency: billData.actualExpenseCurrency,
-					};
-				}
-			}
-		}
-		return updatedDebts;
-	}
+	// 			// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
+	// 			if (Number(creditorDebts) >= Number(debtorDebts)) {
+	// 				updatedDebts[debtorId][creditorId] = {
+	// 					amount: round(Number(debtorDebts) / Number(billData.rate), 2),
+	// 					currency: billData.actualExpenseCurrency,
+	// 				};
+	// 			} else {
+	// 				// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
+	// 				updatedDebts[debtorId][creditorId] = {
+	// 					amount: round(Number(creditorDebts) / Number(billData.rate), 2),
+	// 					currency: billData.actualExpenseCurrency,
+	// 				};
+	// 			}
+	// 		}
+	// 	}
+	// 	return updatedDebts;
+	// }
 
-	function handleButtonClick() {
+	async function handleButtonClick() {
 		// 錯誤處理
 		if (billData.billDate === '') {
 			handleErrors('billDate', '請選擇消費日期');
@@ -448,17 +456,21 @@ function BillPage() {
 		if (invalidInputs) return;
 
 		// 計算債務關係
-		const updatedDebts = calculateDebts();
+		// const updatedDebts = calculateDebts();
 
-		console.log('updatedDebts', updatedDebts);
+		try {
+			const docRef = doc(db, 'group', tempId);
+			const billsCollectionRef = collection(docRef, 'bills');
 
-		setBillData((prev) => ({
-			...prev,
-			debts: updatedDebts,
-		}));
+			const ref = await addDoc(billsCollectionRef, billData);
+			console.log('Document written with ID: ', ref.id);
+			navigate('/ledger');
+		} catch (e) {
+			console.error('Error adding doc: ', e);
+		}
 	}
 
-	return (
+	return !isLoading ? (
 		<PageTemplate pageTitle='新增消費' pageButtonTitle='新增' onClick={handleButtonClick}>
 			<div className={style.billPage}>
 				<Input
@@ -559,7 +571,7 @@ function BillPage() {
 				</Select>
 			</div>
 		</PageTemplate>
-	);
+	) : null;
 }
 
 export { BillPage };

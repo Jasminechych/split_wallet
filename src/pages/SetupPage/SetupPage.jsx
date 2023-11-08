@@ -17,8 +17,8 @@ function SetupPage() {
 	const [groupData, setGroupData] = useState({
 		groupName: '',
 		groupMembersList: [],
-		localExpenseCurrency: '',
-		actualExpenseCurrency: '',
+		localExpenseCurrency: 'TWD',
+		actualExpenseCurrency: 'TWD',
 	});
 
 	const [groupMember, setGroupMember] = useState('');
