@@ -12,12 +12,6 @@ import currencyData from 'src/assets/currencyData.json';
 import db from 'src/libraries/utils/firebase';
 import { getDoc, doc } from 'firebase/firestore';
 
-// const memberData = [
-// 	{ memberId: '1', memberName: 'AnnaGGGG' },
-// 	{ memberId: '2', memberName: 'Tim' },
-// 	{ memberId: '3', memberName: 'Bill' },
-// ];
-
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
 	{ key: 'multiple', value: '多人付款' },
@@ -61,15 +55,13 @@ function BillPage() {
 	useEffect(() => {
 		const fetchGroupData = async () => {
 			try {
-				const docRef = doc(db, 'group', 'ALz1VAzWFtbDG3hKPHLQ');
+				const docRef = doc(db, 'group', 'Piq4T5z5wUVNJaDvQJsi');
 				const getDocData = await getDoc(docRef);
 				const data = getDocData.data();
-				const dataMemberList = data.groupMembersList.reduce((acc, id) => {
-					acc[id] = { amount: '0.00', isSelected: false };
+				const dataMemberList = data.groupMembersList.reduce((acc, member) => {
+					acc[member.memberId] = { amount: '0.00', isSelected: false };
 					return acc;
 				}, {});
-
-				console.log('dataMemberList', dataMemberList);
 
 				setBillData((prev) => ({
 					...prev,
@@ -86,21 +78,6 @@ function BillPage() {
 		};
 
 		fetchGroupData();
-
-		// 初始化資料格式
-		// const memberDistributionData = memberData.reduce((acc, { memberId }) => {
-		// 	acc[memberId] = { amount: '0.00', isSelected: false };
-		// 	return acc;
-		// }, {});
-
-		// setBillData((prev) => ({
-		// 	...prev,
-		// 	// 依 setup 待修正
-		// 	localExpenseCurrency: 'TWD',
-		// 	actualExpenseCurrency: 'TWD',
-		// 	payerPayments: memberDistributionData,
-		// 	splitPayments: memberDistributionData,
-		// }));
 	}, []);
 
 	//  payerPayments 計算未分配金額
@@ -116,7 +93,7 @@ function BillPage() {
 			return Number(acc) + Number(curr.amount);
 		}, 0);
 
-		unSettled = round(sum - Number(billData.localExpense), 2);
+		unSettled = round(sum - unSettled, 2);
 
 		return unSettled;
 	}
@@ -429,9 +406,6 @@ function BillPage() {
 		return updatedDebts;
 	}
 
-	// console.log('billData', billData);
-
-	// 測試結果
 	function handleButtonClick() {
 		// 錯誤處理
 		if (billData.billDate === '') {

@@ -11,6 +11,7 @@ import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import db from 'src/libraries/utils/firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 function SetupPage() {
 	const [groupData, setGroupData] = useState({
@@ -69,7 +70,7 @@ function SetupPage() {
 		}
 
 		// 錯誤處理，防止重複的成員名稱
-		if (groupData.groupMembersList.includes(value.trim())) {
+		if (groupData.groupMembersList.some((member) => member.memberName === value.trim())) {
 			handleErrors('groupMember', '請輸入非重複的成員名稱');
 			return;
 		}
@@ -77,7 +78,10 @@ function SetupPage() {
 		// 去除前後空白後儲存成員名稱
 		setGroupData((prev) => ({
 			...prev,
-			groupMembersList: [value.trim(), ...prev.groupMembersList],
+			groupMembersList: [
+				{ memberId: uuidv4(), memberName: value.trim() },
+				...prev.groupMembersList,
+			],
 		}));
 
 		// 清除輸入的成員名稱
@@ -87,10 +91,10 @@ function SetupPage() {
 		clearErrors('groupMember');
 	}
 
-	function handleDeleteMember(id) {
+	function handleDeleteMember(name) {
 		setGroupData((prev) => ({
 			...prev,
-			groupMembersList: prev.groupMembersList.filter((member) => member !== id),
+			groupMembersList: prev.groupMembersList.filter((member) => member.memberName !== name),
 		}));
 	}
 
