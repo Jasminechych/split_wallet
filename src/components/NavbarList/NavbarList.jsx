@@ -1,7 +1,8 @@
 import style from 'src/components/NavbarList/NavbarList.module.scss';
-import { NavLink, useParams } from 'react-router-dom';
+import { NavLink, useParams, useNavigate } from 'react-router-dom';
 
 function NavbarList() {
+	const navigate = useNavigate();
 	const { id } = useParams();
 
 	const navbarList = [
@@ -28,6 +29,13 @@ function NavbarList() {
 					navigator.clipboard.writeText(`http://localhost:3000/record/${id}`);
 				}}>
 				複製連結
+			</p>
+			<p
+				className={style.navItem}
+				onClick={() => {
+					navigate('/');
+				}}>
+				回到註冊頁
 			</p>
 		</nav>
 	);
