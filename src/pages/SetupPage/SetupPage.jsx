@@ -115,7 +115,7 @@ function SetupPage() {
 			console.log('Document written with ID: ', docRef.id);
 			handleGroupInfoChange(docRef.id);
 
-			navigate('/bill');
+			navigate(`/bill/${docRef.id}`);
 		} catch (e) {
 			console.error('Error adding document: ', e);
 		}

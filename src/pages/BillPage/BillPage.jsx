@@ -11,7 +11,7 @@ import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import db from 'src/libraries/utils/firebase';
 import { getDoc, doc, addDoc, collection } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -47,8 +47,11 @@ function BillPage() {
 
 	// const { groupInfo } = useGroupInfo();
 
+	// 取得 docRef
+	const { id } = useParams();
+
 	// 測試用
-	const tempId = '7SDElmh9lQhcBWjIYz18';
+	const tempId = id;
 
 	// 錯誤訊息管理 Hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
@@ -414,7 +417,7 @@ function BillPage() {
 
 			const ref = await addDoc(billsCollectionRef, billData);
 			console.log('Document written with ID: ', ref.id);
-			navigate('/record');
+			navigate(`/record/${id}`);
 		} catch (e) {
 			console.error('Error adding doc: ', e);
 		}

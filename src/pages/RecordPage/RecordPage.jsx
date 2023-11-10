@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { RecordList } from 'src/components/RecordList/RecordList';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import db from 'src/libraries/utils/firebase';
 import { doc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 
@@ -9,12 +9,14 @@ function RecordPage() {
 	const [recordData, setRecordData] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
+	const { id } = useParams();
+
+	// 測試用
+	const tempId = id;
 
 	useEffect(() => {
 		const fetchBillsData = async () => {
 			try {
-				// 測試用
-				const tempId = '7SDElmh9lQhcBWjIYz18';
 				const docRef = doc(db, 'group', tempId);
 				const billsCollectionRef = collection(docRef, 'bills');
 				const querySnapshot = await getDocs(billsCollectionRef);
@@ -65,7 +67,9 @@ function RecordPage() {
 		<PageTemplate
 			pageTitle='消費紀錄'
 			pageButtonTitle={recordData.length ? '結算' : '新增消費'}
-			onClick={recordData.length ? () => handleClick('/ledger') : () => handleClick('/bill')}>
+			onClick={
+				recordData.length ? () => handleClick(`/ledger/${id}`) : () => handleClick(`/bill/${id}`)
+			}>
 			{isLoading ? (
 				<></>
 			) : (

@@ -11,9 +11,15 @@ function App() {
 				<GroupInfoProvider>
 					<Routes>
 						<Route path='/' element={<SetupPage />} />
-						<Route path='record' element={<RecordPage />} />
-						<Route path='bill' element={<BillPage />} />
-						<Route path='ledger' element={<LedgerPage />} />
+						<Route path='record'>
+							<Route path=':id' element={<RecordPage />} />
+						</Route>
+						<Route path='bill'>
+							<Route path=':id' element={<BillPage />} />
+						</Route>
+						<Route path='ledger'>
+							<Route path=':id' element={<LedgerPage />} />
+						</Route>
 					</Routes>
 				</GroupInfoProvider>
 			</BrowserRouter>

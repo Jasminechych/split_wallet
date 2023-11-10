@@ -1,13 +1,15 @@
 import style from 'src/components/NavbarList/NavbarList.module.scss';
-import { NavLink } from 'react-router-dom';
-
-const navbarList = [
-	{ key: '/record', value: '消費紀錄' },
-	{ key: '/bill', value: '新增消費' },
-	{ key: '/ledger', value: '結算' },
-];
+import { NavLink, useParams } from 'react-router-dom';
 
 function NavbarList() {
+	const { id } = useParams();
+
+	const navbarList = [
+		{ key: `/record/${id}`, value: '消費紀錄' },
+		{ key: `/bill/${id}`, value: '新增消費' },
+		{ key: `/ledger/${id}`, value: '結算' },
+	];
+
 	return (
 		<nav className={style.navbarList}>
 			{navbarList.map(({ key, value }) => {
@@ -23,7 +25,7 @@ function NavbarList() {
 			<p
 				className={style.navItem}
 				onClick={() => {
-					navigator.clipboard.writeText('http://localhost:3000/record');
+					navigator.clipboard.writeText(`http://localhost:3000/record/${id}`);
 				}}>
 				複製連結
 			</p>
