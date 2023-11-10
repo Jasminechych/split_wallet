@@ -1,10 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { LedgerList } from 'src/components/LedgerList/LedgerList';
-import { useEffect } from 'react';
-// import db from 'src/libraries/utils/firebase';
-// import { doc, getDocs, collection, getDoc } from 'firebase/firestore';
 import { round } from 'src/libraries/utils/round';
 import { getBills, getGroupInfo } from 'src/apis/apis';
 
@@ -45,12 +42,14 @@ function LedgerPage() {
 					return member ? member.memberName : memberId;
 				};
 
-				const transformedDebtsData = totalDebtsData.map((debt) => ({
-					debtor: mapMemberIdToName(debt.debtor),
-					creditor: mapMemberIdToName(debt.creditor),
-					amount: debt.amount,
-					currency: debt.currency,
-				}));
+				const transformedDebtsData = totalDebtsData
+					.map((debt) => ({
+						debtor: mapMemberIdToName(debt.debtor),
+						creditor: mapMemberIdToName(debt.creditor),
+						amount: debt.amount,
+						currency: debt.currency,
+					}))
+					.sort((a, b) => a.debtor.localeCompare(b.debtor));
 
 				setLedgerlData(transformedDebtsData);
 			} else {
@@ -112,36 +111,35 @@ function LedgerPage() {
 		return debt;
 	}
 
+	// 對多筆 bill 的債務計算
 	function calculateTotalDebts(debtsData) {
-		const summedDebtsMap = new Map();
-
-		debtsData.forEach((debt) => {
+		const summedDebtsMap = debtsData.reduce((acc, debt) => {
+			// key 紀錄 債務人、債權人、交易貨幣 的關係
 			const key1 = `${debt.debtor}_${debt.creditor}_${debt.currency}`;
 			const key2 = `${debt.creditor}_${debt.debtor}_${debt.currency}`;
 
-			if (summedDebtsMap.has(key2)) {
-				const key2Value = summedDebtsMap.get(key2);
-				const debtAmount = Number(debt.amount);
+			const debtAmount = Number(debt.amount);
+			const key2Value = acc.get(key2) || 0;
 
-				if (key2Value >= debtAmount) {
-					summedDebtsMap.set(key2, key2Value - debtAmount);
-					if (summedDebtsMap.get(key2) === 0) {
-						summedDebtsMap.delete(key2);
-					}
-				} else {
-					summedDebtsMap.set(key2, 0);
-					summedDebtsMap.set(key1, debtAmount - key2Value);
-					if (summedDebtsMap.get(key2) === 0) {
-						summedDebtsMap.delete(key2);
-					}
-				}
+			// 如果債權人欠債務人錢 大於 債務人欠債權人的錢
+			if (key2Value >= debtAmount) {
+				acc.set(key2, key2Value - debtAmount);
 			} else {
-				const value = (summedDebtsMap.get(key1) || 0) + Number(debt.amount);
+				acc.set(key2, 0);
+				acc.set(key1, debtAmount - key2Value);
+			}
 
-				summedDebtsMap.set(key1, value);
+			return acc;
+		}, new Map());
+
+		// 清除沒有欠債的 key
+		summedDebtsMap.forEach((value, key) => {
+			if (value === 0) {
+				summedDebtsMap.delete(key);
 			}
 		});
 
+		// 將 Map 資料轉成需要的格式
 		const result = Array.from(summedDebtsMap).map(([key, amount]) => {
 			const [debtor, creditor, currency] = key.split('_');
 
