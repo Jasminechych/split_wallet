@@ -47,6 +47,7 @@ function BillPage() {
 
 	// const { groupInfo } = useGroupInfo();
 
+	// 測試用
 	const tempId = '7SDElmh9lQhcBWjIYz18';
 
 	// 錯誤訊息管理 Hook
@@ -366,54 +367,6 @@ function BillPage() {
 		});
 	}
 
-	// function calculateDebts() {
-	// 	let updatedDebts = {};
-
-	// 	for (const creditorId in billData.payerPayments) {
-	// 		for (const debtorId in billData.splitPayments) {
-	// 			const debtorSplitPayment = Number(billData.splitPayments[debtorId].amount);
-	// 			const debtorPayerPayment = Number(billData.payerPayments[debtorId].amount);
-	// 			const creditorSplitPayment = Number(billData.splitPayments[creditorId].amount);
-	// 			const creditorPayerPayment = Number(billData.payerPayments[creditorId].amount);
-
-	// 			// 潛在債務人
-	// 			const potentialDebtor =
-	// 				debtorSplitPayment > 0 || debtorSplitPayment - debtorPayerPayment > 0;
-
-	// 			if (!potentialDebtor || debtorId === creditorId) continue;
-
-	// 			// 債務人債款
-	// 			const debtorDebts = round(debtorSplitPayment - debtorPayerPayment, 2);
-
-	// 			// 潛在債權人
-	// 			const potentialCreditor = creditorPayerPayment - creditorSplitPayment > 0;
-
-	// 			if (!potentialCreditor) continue;
-
-	// 			// 債權人債款
-	// 			const creditorDebts = round(creditorPayerPayment - creditorSplitPayment, 2);
-
-	// 			// 建立債務關係
-	// 			updatedDebts[debtorId] = updatedDebts[debtorId] || {};
-
-	// 			// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
-	// 			if (Number(creditorDebts) >= Number(debtorDebts)) {
-	// 				updatedDebts[debtorId][creditorId] = {
-	// 					amount: round(Number(debtorDebts) / Number(billData.rate), 2),
-	// 					currency: billData.actualExpenseCurrency,
-	// 				};
-	// 			} else {
-	// 				// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
-	// 				updatedDebts[debtorId][creditorId] = {
-	// 					amount: round(Number(creditorDebts) / Number(billData.rate), 2),
-	// 					currency: billData.actualExpenseCurrency,
-	// 				};
-	// 			}
-	// 		}
-	// 	}
-	// 	return updatedDebts;
-	// }
-
 	async function handleButtonClick() {
 		// 錯誤處理
 		if (billData.billDate === '') {
@@ -447,16 +400,13 @@ function BillPage() {
 		const invalidInputs =
 			billData.billDate === '' ||
 			billData.billTitle.trim() === '' ||
-			Number(billData.localExpense) === 0 ||
-			Number(billData.actualExpense) === 0 ||
-			Number(billData.rate) === 0 ||
+			Number(billData.localExpense) <= 0 ||
+			Number(billData.actualExpense) <= 0 ||
+			Number(billData.rate) <= 0 ||
 			payerPaymentsUnSettledAmount > 0 ||
 			splitPaymentsUnSettledAmount > 0;
 
 		if (invalidInputs) return;
-
-		// 計算債務關係
-		// const updatedDebts = calculateDebts();
 
 		try {
 			const docRef = doc(db, 'group', tempId);
@@ -464,13 +414,15 @@ function BillPage() {
 
 			const ref = await addDoc(billsCollectionRef, billData);
 			console.log('Document written with ID: ', ref.id);
-			navigate('/ledger');
+			navigate('/record');
 		} catch (e) {
 			console.error('Error adding doc: ', e);
 		}
 	}
 
-	return !isLoading ? (
+	return isLoading ? (
+		<></>
+	) : (
 		<PageTemplate pageTitle='新增消費' pageButtonTitle='新增' onClick={handleButtonClick}>
 			<div className={style.billPage}>
 				<Input
@@ -571,7 +523,7 @@ function BillPage() {
 				</Select>
 			</div>
 		</PageTemplate>
-	) : null;
+	);
 }
 
 export { BillPage };
