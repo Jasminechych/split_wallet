@@ -2,19 +2,24 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	align-items: center;
+	align-content: center;
 	width: 100%;
 	overflow-y: scroll;
 }
 
 .ledgerItem {
-	display: flex;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr) auto;
 	justify-content: space-between;
 	align-items: center;
 	width: 100%;
 	height: 48px;
 	padding-left: 8px;
 	border-bottom: var(--border-bottom-primary);
+
+	&:hover {
+		background-color: var(--dark-20);
+	}
 }
 
 .emptyContent {
