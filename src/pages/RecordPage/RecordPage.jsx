@@ -5,19 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import db from 'src/libraries/utils/firebase';
 import { doc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 
-const data = [
-	{ id: 1, title: '早餐', date: '2023/05/12' },
-	{ id: 2, title: '晚餐', date: '2023/05/12' },
-	{ id: 3, title: '晚餐', date: '2023/05/12' },
-	{ id: 4, title: '晚餐', date: '2023/05/12' },
-	{ id: 5, title: '晚餐', date: '2023/05/12' },
-	{ id: 6, title: '晚餐', date: '2023/05/12' },
-	{ id: 7, title: '晚餐', date: '2023/05/12' },
-	{ id: 8, title: '晚餐', date: '2023/05/12' },
-	{ id: 9, title: '晚餐', date: '2023/05/12' },
-	{ id: 10, title: '晚餐', date: '2023/05/12' },
-];
-
 function RecordPage() {
 	const [recordData, setRecordData] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +43,6 @@ function RecordPage() {
 	}
 
 	async function handleDeleteRecord(billId) {
-		console.log('billId', billId);
 		setIsLoading(true);
 
 		try {
@@ -78,8 +64,8 @@ function RecordPage() {
 	return (
 		<PageTemplate
 			pageTitle='消費紀錄'
-			pageButtonTitle={data.length ? '結算' : '新增消費'}
-			onClick={data.length ? () => handleClick('/ledger') : () => handleClick('/bill')}>
+			pageButtonTitle={recordData.length ? '結算' : '新增消費'}
+			onClick={recordData.length ? () => handleClick('/ledger') : () => handleClick('/bill')}>
 			{isLoading ? (
 				<></>
 			) : (
