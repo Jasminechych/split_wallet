@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { LedgerList } from 'src/components/LedgerList/LedgerList';
 import { useEffect } from 'react';
@@ -11,9 +11,10 @@ function LedgerPage() {
 	const [ledgerData, setLedgerlData] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
+	const { id } = useParams();
 
 	// 測試用
-	const tempId = '7SDElmh9lQhcBWjIYz18';
+	const tempId = id;
 
 	useEffect(() => {
 		setIsLoading(true);
@@ -174,7 +175,7 @@ function LedgerPage() {
 	}
 
 	function handleClick() {
-		navigate('/bill');
+		navigate(`/bill/${id}`);
 	}
 
 	return (
