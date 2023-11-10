@@ -6,12 +6,10 @@ import { Input } from 'src/components/Input/Input';
 import { MemberList } from 'src/components/MemberList/MemberList';
 import { Add } from 'src/assets/icons';
 import { Select } from 'src/components/Select/Select';
-import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
-import db from 'src/libraries/utils/firebase';
-import { collection, addDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { addGroup } from 'src/apis/apis';
 
 function SetupPage() {
 	const [groupData, setGroupData] = useState({
@@ -20,15 +18,12 @@ function SetupPage() {
 		localExpenseCurrency: 'TWD',
 		actualExpenseCurrency: 'TWD',
 	});
-
 	const [groupMember, setGroupMember] = useState('');
 
-	// context
-	const { handleGroupInfoChange } = useGroupInfo();
-
+	// react-router
 	const navigate = useNavigate();
 
-	// 錯誤訊息管理 Hook
+	// hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
 	function handleGroupNameChange(value) {
@@ -55,27 +50,27 @@ function SetupPage() {
 		}));
 	}
 
-	function handleGroupMemberChange(e) {
-		setGroupMember(e);
+	function handleGroupMemberChange(value) {
+		setGroupMember(value);
 
 		// 清除錯誤訊息
 		clearErrors('groupMember');
 	}
 
 	function handleAddMember(value) {
-		// 錯誤處理，防止空白的成員名稱
+		// 防止空白的成員名稱
 		if (!value.trim().length) {
 			handleErrors('groupMember', '群組成員名稱不得為空白');
 			return;
 		}
 
-		// 錯誤處理，防止重複的成員名稱
+		// 防止重複的成員名稱
 		if (groupData.groupMembersList.some((member) => member.memberName === value.trim())) {
 			handleErrors('groupMember', '請輸入非重複的成員名稱');
 			return;
 		}
 
-		// 去除前後空白後儲存成員名稱
+		// 去除前後空白後儲存成員
 		setGroupData((prev) => ({
 			...prev,
 			groupMembersList: [
@@ -84,7 +79,7 @@ function SetupPage() {
 			],
 		}));
 
-		// 清除輸入的成員名稱
+		// 清除已儲存的成員名稱
 		setGroupMember('');
 
 		// 清除錯誤訊息
@@ -110,14 +105,13 @@ function SetupPage() {
 
 		if (groupData.groupName === '' || !groupData.groupMembersList.length) return;
 
-		try {
-			const docRef = await addDoc(collection(db, 'group'), groupData);
-			console.log('Document written with ID: ', docRef.id);
-			handleGroupInfoChange(docRef.id);
+		// 建立群組
+		const { successAddGroup, groupId } = await addGroup(groupData);
 
-			navigate(`/bill/${docRef.id}`);
-		} catch (e) {
-			console.error('Error adding document: ', e);
+		if (successAddGroup) {
+			navigate(`/bill/${groupId}`);
+		} else {
+			window.alert('建立失敗');
 		}
 	}
 

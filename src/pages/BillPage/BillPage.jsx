@@ -6,12 +6,10 @@ import { Select } from 'src/components/Select/Select';
 import { ExpenseDistribution } from 'src/components/ExpenseDistribution/ExpenseDistribution';
 import { round } from 'src/libraries/utils/round';
 import { checkValidNumberInput } from 'src/libraries/utils/checkValidNumberInput';
-// import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
-import db from 'src/libraries/utils/firebase';
-import { getDoc, doc, addDoc, collection } from 'firebase/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
+import { addBill, getGroupInfo } from 'src/apis/apis';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -45,47 +43,39 @@ function BillPage() {
 	const selectedSplitMemberRef = useRef([]);
 	const selectedPayerMemberRef = useRef('');
 
-	// const { groupInfo } = useGroupInfo();
-
-	// 取得 docRef
+	// react-router
+	const navigate = useNavigate();
 	const { id } = useParams();
+	const groupId = id;
 
-	// 測試用
-	const tempId = id;
-
-	// 錯誤訊息管理 Hook
+	// hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
-	const navigate = useNavigate();
-
-	console.log('渲染 BillPage');
-
 	useEffect(() => {
-		setIsLoading(true);
 		const fetchGroupData = async () => {
-			try {
-				// 測試用
-				const docRef = doc(db, 'group', tempId);
-				const getDocData = await getDoc(docRef);
-				const data = getDocData.data();
-				const dataMemberList = data.groupMembersList.reduce((acc, member) => {
+			setIsLoading(true);
+
+			const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupId);
+
+			if (successGetGroupInfo) {
+				const initializedDistribution = groupInfo.groupMembersList.reduce((acc, member) => {
 					acc[member.memberId] = { amount: '0.00', isSelected: false };
 					return acc;
 				}, {});
 
 				setBillData((prev) => ({
 					...prev,
-					localExpenseCurrency: data.localExpenseCurrency,
-					actualExpenseCurrency: data.actualExpenseCurrency,
-					payerPayments: dataMemberList,
-					splitPayments: dataMemberList,
+					localExpenseCurrency: groupInfo.localExpenseCurrency,
+					actualExpenseCurrency: groupInfo.actualExpenseCurrency,
+					payerPayments: initializedDistribution,
+					splitPayments: initializedDistribution,
 				}));
 
-				setMemberData(data.groupMembersList);
+				setMemberData(groupInfo.groupMembersList);
 
 				setIsLoading(false);
-			} catch (e) {
-				console.error('Error fetching group data:', e);
+			} else {
+				window.alert('讀取資料錯誤，請再試一次');
 			}
 		};
 
@@ -380,16 +370,16 @@ function BillPage() {
 			handleErrors('billTitle', '消費品項不得為空白');
 		}
 
-		if (Number(billData.localExpense) === 0) {
-			handleErrors('localExpense', '當地消費金額不得為空白或 0');
+		if (Number(billData.localExpense) <= 0) {
+			handleErrors('localExpense', '當地消費金額不得小於 0');
 		}
 
-		if (Number(billData.actualExpense) === 0) {
-			handleErrors('actualExpense', '實際帳單金額不得為空白或 0');
+		if (Number(billData.actualExpense) <= 0) {
+			handleErrors('actualExpense', '實際帳單金額不得小於 0');
 		}
 
-		if (Number(billData.rate) === 0) {
-			handleErrors('rate', '匯率不得為空白或 0');
+		if (Number(billData.rate) <= 0) {
+			handleErrors('rate', '匯率不得小於 0');
 		}
 
 		if (payerPaymentsUnSettledAmount > 0) {
@@ -411,16 +401,18 @@ function BillPage() {
 
 		if (invalidInputs) return;
 
-		try {
-			const docRef = doc(db, 'group', tempId);
-			const billsCollectionRef = collection(docRef, 'bills');
+		// 儲存資料
+		setIsLoading(true);
 
-			const ref = await addDoc(billsCollectionRef, billData);
-			console.log('Document written with ID: ', ref.id);
-			navigate(`/record/${id}`);
-		} catch (e) {
-			console.error('Error adding doc: ', e);
+		const { successAddBill } = await addBill(groupId, billData);
+
+		if (successAddBill) {
+			navigate(`/record/${groupId}`);
+		} else {
+			window.alert('新增資料失敗，請再試一次');
 		}
+
+		setIsLoading(false);
 	}
 
 	return isLoading ? (
