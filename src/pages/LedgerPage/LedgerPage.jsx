@@ -6,7 +6,7 @@ import { round } from 'src/libraries/utils/round';
 import { getBills, getGroupInfo } from 'src/apis/apis';
 
 function LedgerPage() {
-	const [ledgerData, setLedgerlData] = useState([]);
+	const [ledgerData, setLedgerData] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 
 	// react-router
@@ -51,7 +51,7 @@ function LedgerPage() {
 					}))
 					.sort((a, b) => a.debtor.localeCompare(b.debtor));
 
-				setLedgerlData(transformedDebtsData);
+				setLedgerData(transformedDebtsData);
 			} else {
 				window.alert('讀取資料錯誤');
 			}
