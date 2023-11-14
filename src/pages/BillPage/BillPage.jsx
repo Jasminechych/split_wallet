@@ -9,7 +9,7 @@ import { checkValidNumberInput } from 'src/libraries/utils/checkValidNumberInput
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addBill, getGroupInfo } from 'src/apis/apis';
+import { addBill, getGroupInfo, getBill, updateBill } from 'src/apis/apis';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -43,9 +43,9 @@ function BillPage() {
 	const selectedSplitMemberRef = useRef([]);
 	const selectedPayerMemberRef = useRef('');
 
-	// react-router
+	// react-router-dom
 	const navigate = useNavigate();
-	const { id } = useParams();
+	const { id, billId } = useParams();
 	const groupId = id;
 
 	// hook
@@ -54,6 +54,43 @@ function BillPage() {
 	useEffect(() => {
 		const fetchGroupData = async () => {
 			setIsLoading(true);
+
+			if (billId) {
+				const { successGetBill, data } = await getBill(groupId, billId);
+				const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupId);
+
+				if (successGetBill && successGetGroupInfo) {
+					setBillData((prev) => ({
+						...prev,
+						billDate: data.billDate,
+						billTitle: data.billTitle,
+						localExpense: data.localExpense,
+						localExpenseCurrency: data.localExpenseCurrency,
+						actualExpense: data.actualExpense,
+						actualExpenseCurrency: data.actualExpenseCurrency,
+						rate: data.rate,
+						payer: data.payer,
+						split: data.split,
+						payerPayments: data.payerPayments,
+						splitPayments: data.splitPayments,
+					}));
+
+					selectedSplitMemberRef.current = Object.keys(data.splitPayments).filter(
+						(key) => data.splitPayments[key].isSelected,
+					);
+					selectedPayerMemberRef.current = Object.keys(data.payerPayments).find(
+						(key) => data.payerPayments[key].isSelected,
+					);
+
+					setMemberData(groupInfo.groupMembersList);
+
+					setIsLoading(false);
+				} else {
+					window.alert('讀取資料錯誤，請再試一次');
+				}
+
+				return;
+			}
 
 			const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupId);
 
@@ -360,7 +397,7 @@ function BillPage() {
 		});
 	}
 
-	async function handleButtonClick() {
+	async function handleButtonClick(action) {
 		// 錯誤處理
 		if (billData.billDate === '') {
 			handleErrors('billDate', '請選擇消費日期');
@@ -404,12 +441,22 @@ function BillPage() {
 		// 儲存資料
 		setIsLoading(true);
 
-		const { successAddBill } = await addBill(groupId, billData);
+		if (action === 'add') {
+			const { successAddBill } = await addBill(groupId, billData);
 
-		if (successAddBill) {
-			navigate(`/record/${groupId}`);
+			if (successAddBill) {
+				navigate(`/record/${groupId}`);
+			} else {
+				window.alert('新增資料失敗，請再試一次');
+			}
 		} else {
-			window.alert('新增資料失敗，請再試一次');
+			const { successUpdateBill } = await updateBill(groupId, billId, billData);
+
+			if (successUpdateBill) {
+				navigate(`/record/${groupId}`);
+			} else {
+				window.alert('更新資料失敗，請再試一次');
+			}
 		}
 
 		setIsLoading(false);
@@ -418,7 +465,10 @@ function BillPage() {
 	return isLoading ? (
 		<></>
 	) : (
-		<PageTemplate pageTitle='新增消費' pageButtonTitle='新增' onClick={handleButtonClick}>
+		<PageTemplate
+			pageTitle={billId ? '修改花費' : '新增花費'}
+			pageButtonTitle={billId ? '儲存' : '新增'}
+			onClick={billId ? () => handleButtonClick('update') : () => handleButtonClick('add')}>
 			<div className={style.billPage}>
 				<Input
 					className={style.billDate}

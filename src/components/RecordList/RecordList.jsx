@@ -1,7 +1,7 @@
 import style from 'src/components/RecordList/RecordList.module.scss';
 import { RecordItem } from 'src/components/RecordItem/RecordItem';
 
-function RecordList({ data = [], handleDeleteRecord }) {
+function RecordList({ data = [], handleUpdateRecord, handleDeleteRecord }) {
 	return (
 		<div className={style.expensesList}>
 			{data.length > 0 ? (
@@ -11,6 +11,7 @@ function RecordList({ data = [], handleDeleteRecord }) {
 						id={item.id}
 						title={item.billTitle}
 						date={item.billDate}
+						handleUpdateRecord={(id) => handleUpdateRecord(id)}
 						handleDeleteRecord={(id) => handleDeleteRecord(id)}
 					/>
 				))

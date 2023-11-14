@@ -27,6 +27,7 @@ function ExpenseDistribution({
 										id={`${memberId}_${inputName}`}
 										type={inputType}
 										name={inputName}
+										checked={payments[memberId].isSelected === true ? true : false}
 										onChange={() => onPaymentsChange(memberId, localExpense, inputName)}
 									/>
 								)}

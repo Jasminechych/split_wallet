@@ -36,6 +36,11 @@ function RecordPage() {
 		navigate(route);
 	}
 
+	function handleUpdateRecord(id) {
+		console.log('update id', id);
+		navigate(`/bill/${groupId}/${id}`);
+	}
+
 	async function handleDeleteRecord(billId) {
 		setIsLoading(true);
 
@@ -64,7 +69,13 @@ function RecordPage() {
 			{isLoading ? (
 				<></>
 			) : (
-				<RecordList data={recordData} handleDeleteRecord={(id) => handleDeleteRecord(id)} />
+				<RecordList
+					data={recordData}
+					handleUpdateRecord={(id) => {
+						handleUpdateRecord(id);
+					}}
+					handleDeleteRecord={(id) => handleDeleteRecord(id)}
+				/>
 			)}
 		</PageTemplate>
 	);

@@ -1,5 +1,5 @@
 import db from 'src/libraries/utils/firebase';
-import { collection, addDoc, doc, getDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
 
 const addGroup = async (dataObj) => {
 	try {
@@ -41,6 +41,21 @@ const addBill = async (groupId, dataObj) => {
 	}
 };
 
+const getBill = async (groupId, billId) => {
+	try {
+		const groupRef = doc(db, 'group', groupId);
+		const billDocRef = doc(groupRef, 'bills', billId);
+		const getDocData = await getDoc(billDocRef);
+		const parsedData = getDocData.data();
+
+		return { successGetBill: true, data: parsedData };
+	} catch (e) {
+		console.error('Error getting bill data:', e);
+
+		return { successGetBill: false };
+	}
+};
+
 const getBills = async (groupId) => {
 	try {
 		const groupRef = doc(db, 'group', groupId);
@@ -77,4 +92,16 @@ const deleteBill = async (groupId, billId) => {
 	}
 };
 
-export { addGroup, getGroupInfo, addBill, getBills, deleteBill };
+const updateBill = async (groupId, billId, dataObj) => {
+	try {
+		const groupRef = doc(db, 'group', groupId);
+		const billDocRef = doc(groupRef, 'bills', billId);
+		await updateDoc(billDocRef, dataObj);
+
+		return { successUpdateBill: true };
+	} catch (e) {
+		console.error('Error updating bill data:', e);
+	}
+};
+
+export { addGroup, getGroupInfo, addBill, getBill, getBills, deleteBill, updateBill };

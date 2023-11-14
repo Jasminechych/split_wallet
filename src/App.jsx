@@ -16,6 +16,7 @@ function App() {
 						</Route>
 						<Route path='bill'>
 							<Route path=':id' element={<BillPage />} />
+							<Route path=':id/:billId' element={<BillPage />} />
 						</Route>
 						<Route path='ledger'>
 							<Route path=':id' element={<LedgerPage />} />
