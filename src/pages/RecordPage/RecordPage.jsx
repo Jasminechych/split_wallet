@@ -8,10 +8,9 @@ function RecordPage() {
 	const [recordData, setRecordData] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 
-	// react-router
+	// react-router-dom
 	const navigate = useNavigate();
-	const { id } = useParams();
-	const groupId = id;
+	const { groupId } = useParams();
 
 	useEffect(() => {
 		const fetchBillsData = async () => {
@@ -37,7 +36,6 @@ function RecordPage() {
 	}
 
 	function handleUpdateRecord(id) {
-		console.log('update id', id);
 		navigate(`/bill/${groupId}/${id}`);
 	}
 
@@ -63,8 +61,8 @@ function RecordPage() {
 			pageButtonTitle={recordData.length ? '結算' : '新增消費'}
 			onClick={
 				recordData.length
-					? () => handleButtonClick(`/ledger/${id}`)
-					: () => handleButtonClick(`/bill/${id}`)
+					? () => handleButtonClick(`/ledger/${groupId}`)
+					: () => handleButtonClick(`/bill/${groupId}`)
 			}>
 			{isLoading ? (
 				<></>

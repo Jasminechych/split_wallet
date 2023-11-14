@@ -47,6 +47,7 @@ function ExpenseDistribution({
 										type='number'
 										name={inputName}
 										placeholder='0.00'
+										value={Number(payments[memberId].amount) || ''}
 										onChange={(e) => onPaymentsChange(memberId, e.target.value, inputType)}
 									/>
 								)}

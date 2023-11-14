@@ -2,13 +2,14 @@ import style from 'src/components/NavbarList/NavbarList.module.scss';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
 
 function NavbarList() {
+	// react-router-dom
 	const navigate = useNavigate();
-	const { id } = useParams();
+	const { groupId } = useParams();
 
 	const navbarList = [
-		{ key: `/record/${id}`, value: '消費紀錄' },
-		{ key: `/bill/${id}`, value: '新增消費' },
-		{ key: `/ledger/${id}`, value: '結算' },
+		{ key: `/record/${groupId}`, value: '消費紀錄' },
+		{ key: `/bill/${groupId}`, value: '新增消費' },
+		{ key: `/ledger/${groupId}`, value: '結算紀錄' },
 	];
 
 	return (
@@ -26,7 +27,7 @@ function NavbarList() {
 			<p
 				className={style.navItem}
 				onClick={() => {
-					navigator.clipboard.writeText(`http://localhost:3000/record/${id}`);
+					navigator.clipboard.writeText(`http://localhost:3000/record/${groupId}`);
 				}}>
 				複製連結
 			</p>
@@ -35,7 +36,7 @@ function NavbarList() {
 				onClick={() => {
 					navigate('/');
 				}}>
-				回到註冊頁
+				建立群組
 			</p>
 		</nav>
 	);

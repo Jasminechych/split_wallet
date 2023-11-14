@@ -9,10 +9,9 @@ function LedgerPage() {
 	const [ledgerData, setLedgerData] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 
-	// react-router
+	// react-router-dom
 	const navigate = useNavigate();
-	const { id } = useParams();
-	const groupId = id;
+	const { groupId } = useParams();
 
 	useEffect(() => {
 		const fetchBillsData = async () => {
@@ -37,11 +36,13 @@ function LedgerPage() {
 
 				const totalDebtsData = calculateTotalDebts(debtsData);
 
+				// 將 id 轉成姓名
 				const mapMemberIdToName = (memberId) => {
 					const member = membersData.find((member) => member.memberId === memberId);
 					return member ? member.memberName : memberId;
 				};
 
+				// 將 id 與人名配對顯示
 				const transformedDebtsData = totalDebtsData
 					.map((debt) => ({
 						debtor: mapMemberIdToName(debt.debtor),
@@ -119,6 +120,7 @@ function LedgerPage() {
 			const key2 = `${debt.creditor}_${debt.debtor}_${debt.currency}`;
 
 			const debtAmount = Number(debt.amount);
+			const key1Value = acc.get(key1) || 0;
 			const key2Value = acc.get(key2) || 0;
 
 			// 如果債權人欠債務人錢 大於 債務人欠債權人的錢
@@ -126,7 +128,7 @@ function LedgerPage() {
 				acc.set(key2, key2Value - debtAmount);
 			} else {
 				acc.set(key2, 0);
-				acc.set(key1, debtAmount - key2Value);
+				acc.set(key1, key1Value + debtAmount - key2Value);
 			}
 
 			return acc;

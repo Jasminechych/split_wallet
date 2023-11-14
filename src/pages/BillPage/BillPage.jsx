@@ -30,8 +30,8 @@ function BillPage() {
 		actualExpense: '',
 		actualExpenseCurrency: '',
 		rate: '',
-		payer: '單人付款',
-		split: '平均分攤',
+		payer: '',
+		split: '',
 		payerPayments: {},
 		splitPayments: {},
 	});
@@ -45,8 +45,7 @@ function BillPage() {
 
 	// react-router-dom
 	const navigate = useNavigate();
-	const { id, billId } = useParams();
-	const groupId = id;
+	const { groupId, billId } = useParams();
 
 	// hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
@@ -104,6 +103,8 @@ function BillPage() {
 					...prev,
 					localExpenseCurrency: groupInfo.localExpenseCurrency,
 					actualExpenseCurrency: groupInfo.actualExpenseCurrency,
+					payer: '單人付款',
+					split: '平均分攤',
 					payerPayments: initializedDistribution,
 					splitPayments: initializedDistribution,
 				}));
@@ -433,8 +434,8 @@ function BillPage() {
 			Number(billData.localExpense) <= 0 ||
 			Number(billData.actualExpense) <= 0 ||
 			Number(billData.rate) <= 0 ||
-			payerPaymentsUnSettledAmount > 0 ||
-			splitPaymentsUnSettledAmount > 0;
+			Number(payerPaymentsUnSettledAmount) !== 0 ||
+			Number(splitPaymentsUnSettledAmount) !== 0;
 
 		if (invalidInputs) return;
 
@@ -466,7 +467,7 @@ function BillPage() {
 		<></>
 	) : (
 		<PageTemplate
-			pageTitle={billId ? '修改花費' : '新增花費'}
+			pageTitle={billId ? '修改消費' : '新增消費'}
 			pageButtonTitle={billId ? '儲存' : '新增'}
 			onClick={billId ? () => handleButtonClick('update') : () => handleButtonClick('add')}>
 			<div className={style.billPage}>

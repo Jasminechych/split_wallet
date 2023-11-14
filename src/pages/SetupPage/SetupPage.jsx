@@ -20,7 +20,7 @@ function SetupPage() {
 	});
 	const [groupMember, setGroupMember] = useState('');
 
-	// react-router
+	// react-router-dom
 	const navigate = useNavigate();
 
 	// hook

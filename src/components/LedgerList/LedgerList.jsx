@@ -9,7 +9,7 @@ function LedgerList({ data = [] }) {
 					return (
 						<div className={style.ledgerItem} key={uuidv4()}>
 							<p>{item.debtor}</p>
-							<p>欠</p>
+							<p>需支付</p>
 							<p>{item.creditor}</p>
 							<p>{item.amount}</p>
 							<p>{item.currency}</p>

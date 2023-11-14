@@ -12,14 +12,14 @@ function App() {
 					<Routes>
 						<Route path='/' element={<SetupPage />} />
 						<Route path='record'>
-							<Route path=':id' element={<RecordPage />} />
+							<Route path=':groupId' element={<RecordPage />} />
 						</Route>
 						<Route path='bill'>
-							<Route path=':id' element={<BillPage />} />
-							<Route path=':id/:billId' element={<BillPage />} />
+							<Route path=':groupId' element={<BillPage />} />
+							<Route path=':groupId/:billId' element={<BillPage />} />
 						</Route>
 						<Route path='ledger'>
-							<Route path=':id' element={<LedgerPage />} />
+							<Route path=':groupId' element={<LedgerPage />} />
 						</Route>
 					</Routes>
 				</GroupInfoProvider>
