@@ -16,7 +16,7 @@ function NavbarList() {
 	function handleCopyLink() {
 		navigator.clipboard.writeText(`http://localhost:3000/record/${groupId}`);
 		Swal.fire({
-			position: 'center-center',
+			position: 'center',
 			icon: 'success',
 			title: '複製連結成功',
 			showConfirmButton: false,

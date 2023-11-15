@@ -126,7 +126,7 @@ function SetupPage() {
 
 		if (successAddGroup) {
 			Swal.fire({
-				position: 'center-center',
+				position: 'center',
 				icon: 'success',
 				title: '建立成功',
 				text: '知道此連結的使用者皆可以存取群組資料 請妥善保存',
@@ -141,7 +141,7 @@ function SetupPage() {
 			navigate(`/bill/${groupId}`);
 		} else {
 			Swal.fire({
-				position: 'center-end',
+				position: 'center',
 				icon: 'error',
 				title: '建立失敗',
 				showConfirmButton: false,
