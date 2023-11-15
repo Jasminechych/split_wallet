@@ -8,16 +8,16 @@ function LedgerList({ data = [] }) {
 				data.map((item) => {
 					return (
 						<div className={style.ledgerItem} key={uuidv4()}>
-							<p>{item.debtor}</p>
-							<p>需支付</p>
-							<p>{item.creditor}</p>
-							<p>{item.amount}</p>
-							<p>{item.currency}</p>
+							<p className={style.ledgerItemDebtor}>{item.debtor}</p>
+							<p className={style.ledgerItemOwe}>需支付</p>
+							<p className={style.ledgerItemCreditor}>{item.creditor}</p>
+							<p className={style.ledgerItemAmount}>{item.amount}</p>
+							<p className={style.ledgerItemCurrency}>{item.currency}</p>
 						</div>
 					);
 				})
 			) : (
-				<h4 className={style.emptyContent}>。。。 還沒有任何紀錄喔 。。。</h4>
+				<h4 className={style.emptyContent}>。。。 還沒有債務紀錄喔 。。。</h4>
 			)}
 		</div>
 	);

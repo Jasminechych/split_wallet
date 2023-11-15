@@ -5,5 +5,7 @@ import { ReactComponent as ExpandMore } from 'src/assets/icons/expand_more.svg';
 import { ReactComponent as More } from 'src/assets/icons/more.svg';
 import { ReactComponent as Edit } from 'src/assets/icons/edit.svg';
 import { ReactComponent as Delete } from 'src/assets/icons/delete.svg';
+import { ReactComponent as Loading } from 'src/assets/icons/loading.svg';
+import { ReactComponent as Wallet } from 'src/assets/icons/wallet.svg';
 
-export { Close, Add, ArrowDropDown, ExpandMore, More, Edit, Delete };
+export { Close, Add, ArrowDropDown, ExpandMore, More, Edit, Delete, Loading, Wallet };

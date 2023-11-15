@@ -2,24 +2,56 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
-	align-content: center;
+	align-items: center;
 	width: 100%;
 	overflow-y: scroll;
 }
 
 .ledgerItem {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr) auto;
+	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	align-content: flex-start;
 	width: 100%;
 	height: 48px;
 	padding-left: 8px;
 	border-bottom: var(--border-bottom-primary);
+	white-space: nowrap;
 
 	&:hover {
 		background-color: var(--dark-20);
 	}
+}
+
+.ledgerItemDebtor,
+.ledgerItemCreditor {
+	width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ledgerItemCreditor {
+	display: inherit;
+	justify-content: center;
+}
+
+.ledgerItemOwe {
+	width: 100%;
+	color: var(--dark-90);
+}
+
+.ledgerItemAmount {
+	display: inherit;
+	justify-content: flex-end;
+	width: 100%;
+}
+
+.ledgerItemCurrency {
+	display: inherit;
+	justify-content: flex-end;
+	width: 100%;
+  color: var(--dark-90);
 }
 
 .emptyContent {

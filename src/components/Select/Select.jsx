@@ -10,7 +10,6 @@ function Select({ className, title, optionsData, value, onChange, children, suff
 						<option key={key}>{value}</option>
 					))}
 				</select>
-				{/* {children} */}
 			</div>
 			<div className={style.distribution}>{children}</div>
 		</div>

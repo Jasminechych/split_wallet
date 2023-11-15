@@ -3,6 +3,7 @@ import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { RecordList } from 'src/components/RecordList/RecordList';
 import { useNavigate, useParams } from 'react-router-dom';
 import { deleteBill, getBills } from 'src/apis/apis';
+import { Loading } from 'src/assets/icons';
 
 function RecordPage() {
 	const [recordData, setRecordData] = useState([]);
@@ -65,7 +66,7 @@ function RecordPage() {
 					: () => handleButtonClick(`/bill/${groupId}`)
 			}>
 			{isLoading ? (
-				<></>
+				<Loading />
 			) : (
 				<RecordList
 					data={recordData}

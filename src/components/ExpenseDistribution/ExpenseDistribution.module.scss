@@ -20,6 +20,12 @@
 	}
 }
 
+.nameWrapper {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .nameWrapper,
 .paymentWrapper {
 	display: inherit;
@@ -55,7 +61,7 @@
 
 .errorMessage {
 	position: absolute;
-	top: 100% ;
+	top: 100%;
 	padding-left: 8px;
 	font-size: 14px;
 	color: var(--danger-color);

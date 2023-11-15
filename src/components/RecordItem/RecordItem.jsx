@@ -9,15 +9,13 @@ function RecordItem({ id, title, date, handleUpdateRecord, handleDeleteRecord })
 		setIsEllipsisClick(!isEllipsisClick);
 	}
 	return (
-		<div className={style.recordItem} id={id}>
-			<div className={style.itemGroup}>
-				<p className={style.itemTitle}>{title}</p>
-				<p className={style.itemDate}>{date}</p>
-				<div className={style.itemIcons}>
-					{isEllipsisClick && <Edit onClick={() => handleUpdateRecord(id)} />}
-					{isEllipsisClick && <Delete onClick={() => handleDeleteRecord(id)} />}
-					<More onClick={handleEllipsisClick} />
-				</div>
+		<div className={style.recordItemGroup} id={id}>
+			<p className={style.recordItemTitle}>{title}</p>
+			<p className={style.recordItemDate}>{date}</p>
+			<div className={style.recordItemIcons}>
+				{isEllipsisClick && <Edit onClick={() => handleUpdateRecord(id)} />}
+				{isEllipsisClick && <Delete onClick={() => handleDeleteRecord(id)} />}
+				<More onClick={handleEllipsisClick} />
 			</div>
 		</div>
 	);

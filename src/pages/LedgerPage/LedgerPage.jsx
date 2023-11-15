@@ -4,6 +4,7 @@ import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { LedgerList } from 'src/components/LedgerList/LedgerList';
 import { round } from 'src/libraries/utils/round';
 import { getBills, getGroupInfo } from 'src/apis/apis';
+import { Loading } from 'src/assets/icons';
 
 function LedgerPage() {
 	const [ledgerData, setLedgerData] = useState([]);
@@ -162,7 +163,7 @@ function LedgerPage() {
 
 	return (
 		<PageTemplate pageTitle='結算' pageButtonTitle='新增消費' onClick={handleButtonClick}>
-			{isLoading ? <></> : <LedgerList data={ledgerData} />}
+			{isLoading ? <Loading /> : <LedgerList data={ledgerData} />}
 		</PageTemplate>
 	);
 }

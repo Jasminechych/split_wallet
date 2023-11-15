@@ -47,3 +47,14 @@ input:-webkit-autofill {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+.hintMessage {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	font-size: 14px;
+	color: var(--dark-80);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

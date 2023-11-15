@@ -10,6 +10,7 @@ import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import { useNavigate, useParams } from 'react-router-dom';
 import { addBill, getGroupInfo, getBill, updateBill } from 'src/apis/apis';
+import { Loading } from 'src/assets/icons';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -153,6 +154,11 @@ function BillPage() {
 			...prev,
 			billTitle: value,
 		}));
+
+		if (value.length > 25) {
+			handleErrors('billTitle', '請勿超過25字');
+			return;
+		}
 
 		// 清除錯誤訊息
 		clearErrors('billTitle');
@@ -408,6 +414,10 @@ function BillPage() {
 			handleErrors('billTitle', '消費品項不得為空白');
 		}
 
+		if (billData.billTitle.length > 25) {
+			handleErrors('billTitle', '消費品項不得超過 25 字');
+		}
+
 		if (Number(billData.localExpense) <= 0) {
 			handleErrors('localExpense', '當地消費金額不得小於 0');
 		}
@@ -420,17 +430,18 @@ function BillPage() {
 			handleErrors('rate', '匯率不得小於 0');
 		}
 
-		if (payerPaymentsUnSettledAmount > 0) {
+		if (Number(payerPaymentsUnSettledAmount) !== 0) {
 			handleErrors('payerPayments', '請分配帳款');
 		}
 
-		if (splitPaymentsUnSettledAmount > 0) {
+		if (Number(splitPaymentsUnSettledAmount) !== 0) {
 			handleErrors('splitPayments', '請分配帳款');
 		}
 
 		const invalidInputs =
 			billData.billDate === '' ||
 			billData.billTitle.trim() === '' ||
+			billData.billTitle.length > 25 ||
 			Number(billData.localExpense) <= 0 ||
 			Number(billData.actualExpense) <= 0 ||
 			Number(billData.rate) <= 0 ||
@@ -439,9 +450,9 @@ function BillPage() {
 
 		if (invalidInputs) return;
 
-		// 儲存資料
 		setIsLoading(true);
 
+		// 新增資料
 		if (action === 'add') {
 			const { successAddBill } = await addBill(groupId, billData);
 
@@ -450,7 +461,11 @@ function BillPage() {
 			} else {
 				window.alert('新增資料失敗，請再試一次');
 			}
-		} else {
+			return;
+		}
+
+		// 更新資料
+		if (action === 'update') {
 			const { successUpdateBill } = await updateBill(groupId, billId, billData);
 
 			if (successUpdateBill) {
@@ -458,116 +473,120 @@ function BillPage() {
 			} else {
 				window.alert('更新資料失敗，請再試一次');
 			}
+			return;
 		}
 
 		setIsLoading(false);
 	}
 
-	return isLoading ? (
-		<></>
-	) : (
+	return (
 		<PageTemplate
 			pageTitle={billId ? '修改消費' : '新增消費'}
 			pageButtonTitle={billId ? '儲存' : '新增'}
 			onClick={billId ? () => handleButtonClick('update') : () => handleButtonClick('add')}>
-			<div className={style.billPage}>
-				<Input
-					className={style.billDate}
-					title='消費日期'
-					type='date'
-					value={billData.billDate}
-					onChange={(e) => handleBillDateChange(e.target.value)}
-					error={errors.billDate}
-				/>
-				<Input
-					className={style.billTitle}
-					title='品項'
-					type='text'
-					placeholder='請輸入消費品項'
-					value={billData.billTitle}
-					onChange={(e) => handleBillTitleChange(e.target.value)}
-					error={errors.billTitle}
-				/>
-				<Input
-					className={style.localExpense}
-					title='當地消費金額'
-					type='number'
-					placeholder='請輸入當地消費金額'
-					value={billData.localExpense}
-					onChange={(e) => handleLocalExpenseChange(e.target.value)}
-					error={errors.localExpense}
-					suffix={
-						<Select
-							optionsData={currencyData}
-							value={billData.localExpenseCurrency}
-							onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
-							suffix='true'
-						/>
-					}
-				/>
-				<Input
-					className={style.actualExpense}
-					title='實際帳單金額 (與匯率擇一填寫)'
-					type='number'
-					placeholder='請輸入實際金額'
-					value={billData.actualExpense}
-					onChange={(e) => handleActualExpenseChange(e.target.value)}
-					error={errors.actualExpense}
-					suffix={
-						<Select
-							optionsData={currencyData}
-							value={billData.actualExpenseCurrency}
-							onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
-							suffix='true'
-						/>
-					}
-				/>
-				<Input
-					className={style.rate}
-					title='匯率 (與實際金額擇一填寫)'
-					type='number'
-					placeholder='請輸入匯率'
-					value={billData.rate}
-					onChange={(e) => handleRateChange(e.target.value)}
-					error={errors.rate}
-				/>
-				<Select
-					className={style.payer}
-					title='誰付錢'
-					optionsData={payerOptionsData}
-					value={billData.payer}
-					onChange={(e) => handlePayerChange(e.target.value)}>
-					<ExpenseDistribution
-						className={style.expenseDistributionForPayer}
-						inputType={billData.payer === '單人付款' ? 'radio' : ''}
-						inputName={billData.payer === '單人付款' ? 'singlePayer' : 'multiplePayer'}
-						memberData={memberData}
-						localExpense={billData.localExpense}
-						payments={billData.payerPayments}
-						onPaymentsChange={handlePayerPaymentChange}
-						error={errors.payerPayments}
-						unSettledAmount={payerPaymentsUnSettledAmount}
+			{isLoading ? (
+				<Loading />
+			) : (
+				<div className={style.billPage}>
+					<Input
+						className={style.billDate}
+						title='消費日期'
+						type='date'
+						value={billData.billDate}
+						onChange={(e) => handleBillDateChange(e.target.value)}
+						error={errors.billDate}
 					/>
-				</Select>
-				<Select
-					className={style.split}
-					title='分給誰'
-					optionsData={splitOptionsData}
-					value={billData.split}
-					onChange={(e) => handleSplitChange(e.target.value)}>
-					<ExpenseDistribution
-						className={style.expenseDistributionForSplit}
-						inputType={billData.split === '平均分攤' ? 'checkbox' : ''}
-						inputName={billData.split === '平均分攤' ? 'equalSplit' : 'exactSplit'}
-						memberData={memberData}
-						localExpense={billData.localExpense}
-						payments={billData.splitPayments}
-						onPaymentsChange={handleSplitPaymentChange}
-						error={errors.splitPayments}
-						unSettledAmount={splitPaymentsUnSettledAmount}
+					<Input
+						className={style.billTitle}
+						title='品項'
+						type='text'
+						maxlength='25'
+						placeholder='請輸入消費品項'
+						value={billData.billTitle}
+						onChange={(e) => handleBillTitleChange(e.target.value)}
+						error={errors.billTitle}
 					/>
-				</Select>
-			</div>
+					<Input
+						className={style.localExpense}
+						title='當地消費金額'
+						type='number'
+						placeholder='請輸入當地消費金額'
+						value={billData.localExpense}
+						onChange={(e) => handleLocalExpenseChange(e.target.value)}
+						error={errors.localExpense}
+						suffix={
+							<Select
+								optionsData={currencyData}
+								value={billData.localExpenseCurrency}
+								onChange={(e) => handleLocalExpenseCurrencyChange(e.target.value)}
+								suffix='true'
+							/>
+						}
+					/>
+					<Input
+						className={style.actualExpense}
+						title='實際帳單金額 (與匯率擇一填寫)'
+						type='number'
+						placeholder='請輸入實際金額'
+						value={billData.actualExpense}
+						onChange={(e) => handleActualExpenseChange(e.target.value)}
+						error={errors.actualExpense}
+						suffix={
+							<Select
+								optionsData={currencyData}
+								value={billData.actualExpenseCurrency}
+								onChange={(e) => handleActualExpenseCurrencyChange(e.target.value)}
+								suffix='true'
+							/>
+						}
+					/>
+					<Input
+						className={style.rate}
+						title='匯率 (與實際金額擇一填寫)'
+						type='number'
+						placeholder='請輸入匯率'
+						value={billData.rate}
+						onChange={(e) => handleRateChange(e.target.value)}
+						error={errors.rate}
+					/>
+					<Select
+						className={style.payer}
+						title='誰付錢'
+						optionsData={payerOptionsData}
+						value={billData.payer}
+						onChange={(e) => handlePayerChange(e.target.value)}>
+						<ExpenseDistribution
+							className={style.expenseDistributionForPayer}
+							inputType={billData.payer === '單人付款' ? 'radio' : ''}
+							inputName={billData.payer === '單人付款' ? 'singlePayer' : 'multiplePayer'}
+							memberData={memberData}
+							localExpense={billData.localExpense}
+							payments={billData.payerPayments}
+							onPaymentsChange={handlePayerPaymentChange}
+							error={errors.payerPayments}
+							unSettledAmount={payerPaymentsUnSettledAmount}
+						/>
+					</Select>
+					<Select
+						className={style.split}
+						title='分給誰'
+						optionsData={splitOptionsData}
+						value={billData.split}
+						onChange={(e) => handleSplitChange(e.target.value)}>
+						<ExpenseDistribution
+							className={style.expenseDistributionForSplit}
+							inputType={billData.split === '平均分攤' ? 'checkbox' : ''}
+							inputName={billData.split === '平均分攤' ? 'equalSplit' : 'exactSplit'}
+							memberData={memberData}
+							localExpense={billData.localExpense}
+							payments={billData.splitPayments}
+							onPaymentsChange={handleSplitPaymentChange}
+							error={errors.splitPayments}
+							unSettledAmount={splitPaymentsUnSettledAmount}
+						/>
+					</Select>
+				</div>
+			)}
 		</PageTemplate>
 	);
 }

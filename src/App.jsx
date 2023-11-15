@@ -1,6 +1,6 @@
 import 'src/style/reset.css';
 import 'src/style/base.scss';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { SetupPage, RecordPage, BillPage, LedgerPage } from 'src/pages';
 import { GroupInfoProvider } from 'src/contexts/GroupInfoContext';
 
@@ -10,17 +10,13 @@ function App() {
 			<BrowserRouter>
 				<GroupInfoProvider>
 					<Routes>
+						<Route path='*' element={<Navigate to='/' />} />
 						<Route path='/' element={<SetupPage />} />
-						<Route path='record'>
-							<Route path=':groupId' element={<RecordPage />} />
+						<Route path='record/:groupId' element={<RecordPage />} />
+						<Route path='bill/:groupId' element={<BillPage />}>
+							<Route path=':billId' element={<BillPage />} />
 						</Route>
-						<Route path='bill'>
-							<Route path=':groupId' element={<BillPage />} />
-							<Route path=':groupId/:billId' element={<BillPage />} />
-						</Route>
-						<Route path='ledger'>
-							<Route path=':groupId' element={<LedgerPage />} />
-						</Route>
+						<Route path='ledger/:groupId' element={<LedgerPage />} />
 					</Routes>
 				</GroupInfoProvider>
 			</BrowserRouter>

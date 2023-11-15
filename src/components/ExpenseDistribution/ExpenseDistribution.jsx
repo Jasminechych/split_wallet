@@ -31,7 +31,7 @@ function ExpenseDistribution({
 										onChange={() => onPaymentsChange(memberId, localExpense, inputName)}
 									/>
 								)}
-								<p>{memberName}</p>
+								<p className={style.memberName}>{memberName}</p>
 							</div>
 							<div className={style.paymentWrapper}>
 								<p>$</p>

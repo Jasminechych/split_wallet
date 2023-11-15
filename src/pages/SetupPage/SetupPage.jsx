@@ -29,7 +29,7 @@ function SetupPage() {
 	function handleGroupNameChange(value) {
 		setGroupData((prev) => ({
 			...prev,
-			groupName: value,
+			groupName: value.trim(),
 		}));
 
 		// 清除錯誤訊息
@@ -61,6 +61,12 @@ function SetupPage() {
 		// 防止空白的成員名稱
 		if (!value.trim().length) {
 			handleErrors('groupMember', '群組成員名稱不得為空白');
+			return;
+		}
+
+		// 防止空白的成員超過 15 字
+		if (value.length > 15) {
+			handleErrors('groupMember', '群組成員名稱不得超過 15 字');
 			return;
 		}
 
@@ -99,11 +105,20 @@ function SetupPage() {
 			handleErrors('groupName', '群組名稱不得為空白');
 		}
 
+		if (groupData.groupName.length > 20) {
+			handleErrors('groupName', '群組名稱不得超過 20 字');
+		}
+
 		if (!groupData.groupMembersList.length) {
 			handleErrors('groupMember', '請至少輸入一位群組成員');
 		}
 
-		if (groupData.groupName === '' || !groupData.groupMembersList.length) return;
+		if (
+			groupData.groupName === '' ||
+			groupData.groupName.length > 20 ||
+			!groupData.groupMembersList.length
+		)
+			return;
 
 		// 建立群組
 		const { successAddGroup, groupId } = await addGroup(groupData);
@@ -123,6 +138,7 @@ function SetupPage() {
 					<Input
 						title='群組名稱'
 						type='text'
+						maxlength='20'
 						placeholder='請輸入群組名稱'
 						value={groupData.groupName}
 						onChange={(e) => handleGroupNameChange(e.target.value)}
@@ -145,6 +161,7 @@ function SetupPage() {
 					<Input
 						title='群組成員'
 						type='text'
+						maxlength='15'
 						placeholder='請輸入群組成員'
 						value={groupMember}
 						onChange={(e) => handleGroupMemberChange(e.target.value)}
