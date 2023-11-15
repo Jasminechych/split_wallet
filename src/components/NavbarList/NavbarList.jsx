@@ -14,7 +14,7 @@ function NavbarList() {
 	];
 
 	function handleCopyLink() {
-		navigator.clipboard.writeText(`http://localhost:3000/record/${groupId}`);
+		navigator.clipboard.writeText(`https://split-wallet.vercel.app/record/${groupId}`);
 		Swal.fire({
 			position: 'center',
 			icon: 'success',
