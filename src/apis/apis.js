@@ -101,6 +101,8 @@ const updateBill = async (groupId, billId, dataObj) => {
 		return { successUpdateBill: true };
 	} catch (e) {
 		console.error('Error updating bill data:', e);
+
+		return { successUpdateBill: false };
 	}
 };
 

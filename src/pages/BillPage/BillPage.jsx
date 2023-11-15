@@ -11,6 +11,7 @@ import currencyData from 'src/assets/currencyData.json';
 import { useNavigate, useParams } from 'react-router-dom';
 import { addBill, getGroupInfo, getBill, updateBill } from 'src/apis/apis';
 import { Loading } from 'src/assets/icons';
+import Swal from 'sweetalert2';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -450,16 +451,27 @@ function BillPage() {
 
 		if (invalidInputs) return;
 
-		setIsLoading(true);
-
 		// 新增資料
 		if (action === 'add') {
 			const { successAddBill } = await addBill(groupId, billData);
 
 			if (successAddBill) {
+				Swal.fire({
+					position: 'center',
+					icon: 'success',
+					title: '新增資料成功',
+					showConfirmButton: false,
+					timer: 1000,
+				});
 				navigate(`/record/${groupId}`);
 			} else {
-				window.alert('新增資料失敗，請再試一次');
+				Swal.fire({
+					position: 'center',
+					icon: 'error',
+					title: '新增資料失敗，請稍後再試',
+					showConfirmButton: false,
+					timer: 1000,
+				});
 			}
 			return;
 		}
@@ -469,14 +481,26 @@ function BillPage() {
 			const { successUpdateBill } = await updateBill(groupId, billId, billData);
 
 			if (successUpdateBill) {
+				Swal.fire({
+					position: 'center',
+					icon: 'success',
+					title: '更新資料成功',
+					showConfirmButton: false,
+					timer: 1000,
+				});
 				navigate(`/record/${groupId}`);
 			} else {
-				window.alert('更新資料失敗，請再試一次');
+				Swal.fire({
+					position: 'center',
+					icon: 'error',
+					title: '更新資料失敗，請稍後再試',
+					showConfirmButton: false,
+					timer: 1000,
+				});
+				navigate(`/record/${groupId}`);
 			}
 			return;
 		}
-
-		setIsLoading(false);
 	}
 
 	return (

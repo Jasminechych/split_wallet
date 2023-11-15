@@ -4,6 +4,7 @@ import { RecordList } from 'src/components/RecordList/RecordList';
 import { useNavigate, useParams } from 'react-router-dom';
 import { deleteBill, getBills } from 'src/apis/apis';
 import { Loading } from 'src/assets/icons';
+import Swal from 'sweetalert2';
 
 function RecordPage() {
 	const [recordData, setRecordData] = useState([]);
@@ -43,15 +44,28 @@ function RecordPage() {
 	async function handleDeleteRecord(billId) {
 		setIsLoading(true);
 
-		const { successDeleteBill } = await deleteBill(groupId, billId);
-
-		if (successDeleteBill) {
-			setRecordData((prev) => {
-				return prev.filter((item) => item.id !== billId);
-			});
-		} else {
-			window.alert('刪除資料失敗');
-		}
+		Swal.fire({
+			title: '確定要刪除這筆紀錄？',
+			text: '刪除後資料將無法復原',
+			icon: 'question',
+			showDenyButton: true,
+			confirmButtonText: '刪除',
+			denyButtonText: `不要刪除`,
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				const { successDeleteBill } = await deleteBill(groupId, billId);
+				if (successDeleteBill) {
+					setRecordData((prev) => {
+						return prev.filter((item) => item.id !== billId);
+					});
+					Swal.fire('刪除成功!', '', 'success');
+				} else {
+					Swal.fire('刪除失敗!', '', 'error');
+				}
+			} else if (result.isDenied) {
+				Swal.fire('取消刪除', '', 'info');
+			}
+		});
 
 		setIsLoading(false);
 	}

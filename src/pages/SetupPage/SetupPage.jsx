@@ -10,6 +10,7 @@ import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import { v4 as uuidv4 } from 'uuid';
 import { addGroup } from 'src/apis/apis';
+import Swal from 'sweetalert2';
 
 function SetupPage() {
 	const [groupData, setGroupData] = useState({
@@ -124,9 +125,28 @@ function SetupPage() {
 		const { successAddGroup, groupId } = await addGroup(groupData);
 
 		if (successAddGroup) {
+			Swal.fire({
+				position: 'center-center',
+				icon: 'success',
+				title: '建立成功',
+				text: '知道此連結的使用者皆可以存取群組資料 請妥善保存',
+				confirmButtonText: '儲存連結',
+			}).then((result) => {
+				if (result.isConfirmed) {
+					navigator.clipboard.writeText(`http://localhost:3000/record/${groupId}`);
+					Swal.fire('已複製連結!', '', 'success');
+				}
+			});
+
 			navigate(`/bill/${groupId}`);
 		} else {
-			window.alert('建立失敗');
+			Swal.fire({
+				position: 'center-end',
+				icon: 'error',
+				title: '建立失敗',
+				showConfirmButton: false,
+				timer: 1000,
+			});
 		}
 	}
 

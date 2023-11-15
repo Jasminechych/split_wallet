@@ -1,5 +1,6 @@
 import style from 'src/components/NavbarList/NavbarList.module.scss';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 function NavbarList() {
 	// react-router-dom
@@ -11,6 +12,17 @@ function NavbarList() {
 		{ key: `/bill/${groupId}`, value: '新增消費' },
 		{ key: `/ledger/${groupId}`, value: '結算紀錄' },
 	];
+
+	function handleCopyLink() {
+		navigator.clipboard.writeText(`http://localhost:3000/record/${groupId}`);
+		Swal.fire({
+			position: 'center-center',
+			icon: 'success',
+			title: '複製連結成功',
+			showConfirmButton: false,
+			timer: 1000,
+		});
+	}
 
 	return (
 		<nav className={style.navbarList}>
@@ -24,11 +36,7 @@ function NavbarList() {
 					</NavLink>
 				);
 			})}
-			<p
-				className={style.navItem}
-				onClick={() => {
-					navigator.clipboard.writeText(`http://localhost:3000/record/${groupId}`);
-				}}>
+			<p className={style.navItem} onClick={handleCopyLink}>
 				複製連結
 			</p>
 			<p
