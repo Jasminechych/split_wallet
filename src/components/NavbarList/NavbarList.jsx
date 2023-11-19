@@ -17,7 +17,7 @@ function NavbarList() {
 	];
 
 	function handleCopyLink() {
-		navigator.clipboard.writeText(`https://split-wallet.vercel.app/record/${groupIdentification}`);
+		navigator.clipboard.writeText(`${process.env.PUBLIC_URL}/record/${groupIdentification}`);
 		Swal.fire({
 			position: 'center',
 			icon: 'success',
