@@ -1,44 +1,39 @@
-import { useEffect, useState } from 'react';
 import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { RecordList } from 'src/components/RecordList/RecordList';
 import { useNavigate, useParams } from 'react-router-dom';
-import { deleteBill, getBills } from 'src/apis/apis';
+import { deleteBill } from 'src/apis/apis';
 import { Loading } from 'src/assets/icons';
 import Swal from 'sweetalert2';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
+import { useEffect } from 'react';
 
 function RecordPage() {
-	const [recordData, setRecordData] = useState([]);
-	const [isLoading, setIsLoading] = useState(false);
-
 	// react-router-dom
 	const navigate = useNavigate();
 	const { groupId } = useParams();
 
+	// context
+	const {
+		groupIdentification,
+		handleGroupIdentificationChange,
+		billsCollection,
+		setBillsCollection,
+		isLoading,
+		setIsLoading,
+	} = useGroupInfo();
+
 	useEffect(() => {
-		const fetchBillsData = async () => {
-			setIsLoading(true);
-
-			const { successGetBills, billsData } = await getBills(groupId);
-
-			if (successGetBills) {
-				setRecordData(billsData);
-				setIsLoading(false);
-			} else {
-				window.alert('讀取資料錯誤，請再試一次');
-			}
-
-			setIsLoading(false);
-		};
-
-		fetchBillsData();
-	}, []);
+		if (groupIdentification !== groupId) {
+			handleGroupIdentificationChange(groupId);
+		}
+	}, [groupId]);
 
 	function handleButtonClick(route) {
 		navigate(route);
 	}
 
 	function handleUpdateRecord(id) {
-		navigate(`/bill/${groupId}/${id}`);
+		navigate(`/bill/${groupIdentification}/${id}`);
 	}
 
 	async function handleDeleteRecord(billId) {
@@ -55,7 +50,7 @@ function RecordPage() {
 			if (result.isConfirmed) {
 				const { successDeleteBill } = await deleteBill(groupId, billId);
 				if (successDeleteBill) {
-					setRecordData((prev) => {
+					setBillsCollection((prev) => {
 						return prev.filter((item) => item.id !== billId);
 					});
 					Swal.fire('刪除成功!', '', 'success');
@@ -73,9 +68,9 @@ function RecordPage() {
 	return (
 		<PageTemplate
 			pageTitle='消費紀錄'
-			pageButtonTitle={recordData.length ? '結算' : '新增消費'}
+			pageButtonTitle={billsCollection.length ? '結算' : '新增消費'}
 			onClick={
-				recordData.length
+				billsCollection.length
 					? () => handleButtonClick(`/ledger/${groupId}`)
 					: () => handleButtonClick(`/bill/${groupId}`)
 			}>
@@ -83,7 +78,7 @@ function RecordPage() {
 				<Loading />
 			) : (
 				<RecordList
-					data={recordData}
+					data={billsCollection}
 					handleUpdateRecord={(id) => {
 						handleUpdateRecord(id);
 					}}

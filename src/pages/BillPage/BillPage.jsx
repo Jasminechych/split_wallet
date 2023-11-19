@@ -9,9 +9,10 @@ import { checkValidNumberInput } from 'src/libraries/utils/checkValidNumberInput
 import { useErrorHandling } from 'src/libraries/hooks/useErrorHandling';
 import currencyData from 'src/assets/currencyData.json';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addBill, getGroupInfo, getBill, updateBill } from 'src/apis/apis';
 import { Loading } from 'src/assets/icons';
 import Swal from 'sweetalert2';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
+import { getBill } from 'src/apis/apis';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -39,7 +40,6 @@ function BillPage() {
 	});
 
 	const [memberData, setMemberData] = useState([]);
-	const [isLoading, setIsLoading] = useState(false);
 
 	// 紀錄當前 選到的 payer & split members
 	const selectedSplitMemberRef = useRef([]);
@@ -52,15 +52,30 @@ function BillPage() {
 	// hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
+	// context
+	const {
+		groupIdentification,
+		handleGroupIdentificationChange,
+		groupData,
+		isLoading,
+		setIsLoading,
+		createBill,
+		updateBillData,
+	} = useGroupInfo();
+
 	useEffect(() => {
-		const fetchGroupData = async () => {
-			setIsLoading(true);
+		if (groupIdentification !== groupId) {
+			handleGroupIdentificationChange(groupId);
+		}
 
-			if (billId) {
-				const { successGetBill, data } = await getBill(groupId, billId);
-				const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupId);
+		setMemberData(groupData.groupMembersList);
 
-				if (successGetBill && successGetGroupInfo) {
+		if (billId && groupIdentification) {
+			const fetchBill = async () => {
+				setIsLoading(true);
+
+				const { successGetBill, data } = await getBill(groupIdentification, billId);
+				if (successGetBill) {
 					setBillData((prev) => ({
 						...prev,
 						billDate: data.billDate,
@@ -79,66 +94,53 @@ function BillPage() {
 					selectedSplitMemberRef.current = Object.keys(data.splitPayments).filter(
 						(key) => data.splitPayments[key].isSelected,
 					);
+
 					selectedPayerMemberRef.current = Object.keys(data.payerPayments).find(
 						(key) => data.payerPayments[key].isSelected,
 					);
-
-					setMemberData(groupInfo.groupMembersList);
-
-					setIsLoading(false);
 				} else {
-					window.alert('讀取資料錯誤，請再試一次');
+					Swal.fire({
+						position: 'center',
+						icon: 'error',
+						title: '讀取資料失敗，請稍後再試',
+						showConfirmButton: false,
+						timer: 1000,
+					});
 				}
 
-				return;
-			}
-
-			const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupId);
-
-			if (successGetGroupInfo) {
-				const initializedDistribution = groupInfo.groupMembersList.reduce((acc, member) => {
-					acc[member.memberId] = { amount: '0.00', isSelected: false };
-					return acc;
-				}, {});
-
-				setBillData((prev) => ({
-					...prev,
-					localExpenseCurrency: groupInfo.localExpenseCurrency,
-					actualExpenseCurrency: groupInfo.actualExpenseCurrency,
-					payer: '單人付款',
-					split: '平均分攤',
-					payerPayments: initializedDistribution,
-					splitPayments: initializedDistribution,
-				}));
-
-				setMemberData(groupInfo.groupMembersList);
-
 				setIsLoading(false);
-			} else {
-				window.alert('讀取資料錯誤，請再試一次');
-			}
-		};
+			};
 
-		fetchGroupData();
-	}, []);
+			fetchBill();
+
+			return;
+		}
+
+		const initializedDistribution = groupData.groupMembersList.reduce((acc, member) => {
+			acc[member.memberId] = { amount: '0.00', isSelected: false };
+			return acc;
+		}, {});
+
+		setBillData((prev) => ({
+			...prev,
+			billDate: '',
+			billTitle: '',
+			localExpense: '',
+			localExpenseCurrency: groupData.localExpenseCurrency,
+			actualExpense: '',
+			actualExpenseCurrency: groupData.actualExpenseCurrency,
+			rate: '',
+			payer: '單人付款',
+			split: '平均分攤',
+			payerPayments: initializedDistribution,
+			splitPayments: initializedDistribution,
+		}));
+	}, [groupId, billId, groupData]);
 
 	//  payerPayments 計算未分配金額
 	const payerPaymentsUnSettledAmount = calculateUnSettledAmount(billData.payerPayments);
 	//  splitPayments 計算未分配金額
 	const splitPaymentsUnSettledAmount = calculateUnSettledAmount(billData.splitPayments);
-
-	function calculateUnSettledAmount(data) {
-		let unSettled = Number(billData.localExpense);
-		let sum = 0;
-
-		sum = Object.values(data).reduce((acc, curr) => {
-			return Number(acc) + Number(curr.amount);
-		}, 0);
-
-		unSettled = round(sum - unSettled, 2);
-
-		return unSettled;
-	}
 
 	function handleBillDateChange(value) {
 		setBillData((prev) => ({
@@ -332,6 +334,74 @@ function BillPage() {
 		clearErrors('splitPayments');
 	}
 
+	function handleButtonClick(action) {
+		if (!checkIsValidInputAndErrorsHandler()) return;
+
+		// 新增資料
+		if (action === 'add') {
+			const success = createBill(groupIdentification, billData);
+
+			if (success) {
+				Swal.fire({
+					position: 'center',
+					icon: 'success',
+					title: '新增資料成功',
+					showConfirmButton: false,
+					timer: 1000,
+				});
+				navigate(`/record/${groupIdentification}`);
+			} else {
+				Swal.fire({
+					position: 'center',
+					icon: 'error',
+					title: '新增資料失敗，請稍後再試',
+					showConfirmButton: false,
+					timer: 1000,
+				});
+			}
+			return;
+		}
+
+		// 更新資料
+		if (action === 'update') {
+			const success = updateBillData(groupIdentification, billId, billData);
+
+			if (success) {
+				Swal.fire({
+					position: 'center',
+					icon: 'success',
+					title: '更新資料成功',
+					showConfirmButton: false,
+					timer: 1000,
+				});
+				navigate(`/record/${groupIdentification}`);
+			} else {
+				Swal.fire({
+					position: 'center',
+					icon: 'error',
+					title: '更新資料失敗，請稍後再試',
+					showConfirmButton: false,
+					timer: 1000,
+				});
+				navigate(`/record/${groupIdentification}`);
+			}
+			return;
+		}
+	}
+
+	function calculateUnSettledAmount(data) {
+		let unSettled = Number(billData.localExpense);
+		let sum = 0;
+
+		sum = Object.values(data).reduce((acc, curr) => {
+			return Number(acc) + Number(curr.amount);
+		}, 0);
+
+		unSettled = round(sum - unSettled, 2);
+
+		return unSettled;
+	}
+
 	function calculateRate(inputDividend, inputDivisor) {
 		const dividend = Number(inputDividend);
 		const divisor = Number(inputDivisor);
@@ -405,8 +475,7 @@ function BillPage() {
 		});
 	}
 
-	async function handleButtonClick(action) {
-		// 錯誤處理
+	function checkIsValidInputAndErrorsHandler() {
 		if (billData.billDate === '') {
 			handleErrors('billDate', '請選擇消費日期');
 		}
@@ -449,58 +518,9 @@ function BillPage() {
 			Number(payerPaymentsUnSettledAmount) !== 0 ||
 			Number(splitPaymentsUnSettledAmount) !== 0;
 
-		if (invalidInputs) return;
+		if (invalidInputs) return false;
 
-		// 新增資料
-		if (action === 'add') {
-			const { successAddBill } = await addBill(groupId, billData);
-
-			if (successAddBill) {
-				Swal.fire({
-					position: 'center',
-					icon: 'success',
-					title: '新增資料成功',
-					showConfirmButton: false,
-					timer: 1000,
-				});
-				navigate(`/record/${groupId}`);
-			} else {
-				Swal.fire({
-					position: 'center',
-					icon: 'error',
-					title: '新增資料失敗，請稍後再試',
-					showConfirmButton: false,
-					timer: 1000,
-				});
-			}
-			return;
-		}
-
-		// 更新資料
-		if (action === 'update') {
-			const { successUpdateBill } = await updateBill(groupId, billId, billData);
-
-			if (successUpdateBill) {
-				Swal.fire({
-					position: 'center',
-					icon: 'success',
-					title: '更新資料成功',
-					showConfirmButton: false,
-					timer: 1000,
-				});
-				navigate(`/record/${groupId}`);
-			} else {
-				Swal.fire({
-					position: 'center',
-					icon: 'error',
-					title: '更新資料失敗，請稍後再試',
-					showConfirmButton: false,
-					timer: 1000,
-				});
-				navigate(`/record/${groupId}`);
-			}
-			return;
-		}
+		return true;
 	}
 
 	return (

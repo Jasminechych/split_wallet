@@ -11,14 +11,9 @@ import currencyData from 'src/assets/currencyData.json';
 import { v4 as uuidv4 } from 'uuid';
 import { addGroup } from 'src/apis/apis';
 import Swal from 'sweetalert2';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 
 function SetupPage() {
-	const [groupData, setGroupData] = useState({
-		groupName: '',
-		groupMembersList: [],
-		localExpenseCurrency: 'TWD',
-		actualExpenseCurrency: 'TWD',
-	});
 	const [groupMember, setGroupMember] = useState('');
 
 	// react-router-dom
@@ -27,10 +22,13 @@ function SetupPage() {
 	// hook
 	const { errors, handleErrors, clearErrors } = useErrorHandling();
 
+	// context
+	const { groupData, setGroupData } = useGroupInfo();
+
 	function handleGroupNameChange(value) {
 		setGroupData((prev) => ({
 			...prev,
-			groupName: value.trim(),
+			groupName: value,
 		}));
 
 		// 清除錯誤訊息
@@ -72,18 +70,14 @@ function SetupPage() {
 		}
 
 		// 防止重複的成員名稱
-		if (groupData.groupMembersList.some((member) => member.memberName === value.trim())) {
+		if (groupData.groupMembersList.some((member) => member.memberName.trim() === value.trim())) {
 			handleErrors('groupMember', '請輸入非重複的成員名稱');
 			return;
 		}
 
-		// 去除前後空白後儲存成員
 		setGroupData((prev) => ({
 			...prev,
-			groupMembersList: [
-				{ memberId: uuidv4(), memberName: value.trim() },
-				...prev.groupMembersList,
-			],
+			groupMembersList: [{ memberId: uuidv4(), memberName: value }, ...prev.groupMembersList],
 		}));
 
 		// 清除已儲存的成員名稱
@@ -133,7 +127,7 @@ function SetupPage() {
 				confirmButtonText: '儲存連結',
 			}).then((result) => {
 				if (result.isConfirmed) {
-					navigator.clipboard.writeText(`http://localhost:3000/record/${groupId}`);
+					navigator.clipboard.writeText(`https://split-wallet.vercel.app//record/${groupId}`);
 					Swal.fire('已複製連結!', '', 'success');
 				}
 			});
@@ -143,7 +137,7 @@ function SetupPage() {
 			Swal.fire({
 				position: 'center',
 				icon: 'error',
-				title: '建立失敗',
+				title: '建立失敗，請稍後再試',
 				showConfirmButton: false,
 				timer: 1000,
 			});

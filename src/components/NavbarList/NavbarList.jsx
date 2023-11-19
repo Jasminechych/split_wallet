@@ -1,20 +1,23 @@
 import style from 'src/components/NavbarList/NavbarList.module.scss';
-import { NavLink, useParams, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 
 function NavbarList() {
 	// react-router-dom
 	const navigate = useNavigate();
-	const { groupId } = useParams();
+
+	// context
+	const { groupIdentification, handleGroupIdentificationChange } = useGroupInfo();
 
 	const navbarList = [
-		{ key: `/record/${groupId}`, value: '消費紀錄' },
-		{ key: `/bill/${groupId}`, value: '新增消費' },
-		{ key: `/ledger/${groupId}`, value: '結算紀錄' },
+		{ key: `/record/${groupIdentification}`, value: '消費紀錄' },
+		{ key: `/bill/${groupIdentification}`, value: '新增消費' },
+		{ key: `/ledger/${groupIdentification}`, value: '結算紀錄' },
 	];
 
 	function handleCopyLink() {
-		navigator.clipboard.writeText(`https://split-wallet.vercel.app/record/${groupId}`);
+		navigator.clipboard.writeText(`https://split-wallet.vercel.app/record/${groupIdentification}`);
 		Swal.fire({
 			position: 'center',
 			icon: 'success',
@@ -42,6 +45,7 @@ function NavbarList() {
 			<p
 				className={style.navItem}
 				onClick={() => {
+					handleGroupIdentificationChange('');
 					navigate('/');
 				}}>
 				建立群組

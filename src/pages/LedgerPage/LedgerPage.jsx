@@ -3,66 +3,63 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PageTemplate } from 'src/pages/PageTemplate/PageTemplate';
 import { LedgerList } from 'src/components/LedgerList/LedgerList';
 import { round } from 'src/libraries/utils/round';
-import { getBills, getGroupInfo } from 'src/apis/apis';
 import { Loading } from 'src/assets/icons';
+import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 
 function LedgerPage() {
 	const [ledgerData, setLedgerData] = useState([]);
-	const [isLoading, setIsLoading] = useState(false);
 
 	// react-router-dom
 	const navigate = useNavigate();
 	const { groupId } = useParams();
 
+	// context
+	const {
+		groupIdentification,
+		groupData,
+		billsCollection,
+		handleGroupIdentificationChange,
+		isLoading,
+	} = useGroupInfo();
+
 	useEffect(() => {
-		const fetchBillsData = async () => {
-			setIsLoading(true);
+		if (groupIdentification !== groupId) {
+			handleGroupIdentificationChange(groupId);
+		}
 
-			const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupId);
-			const { successGetBills, billsData } = await getBills(groupId);
+		const debtsData = billsCollection.reduce((acc, item) => {
+			const itemDebt = calculateDebts(
+				item.payerPayments,
+				item.splitPayments,
+				item.rate,
+				item.actualExpenseCurrency,
+			);
 
-			if (successGetGroupInfo && successGetBills) {
-				const membersData = groupInfo.groupMembersList;
+			return [...acc, ...itemDebt];
+		}, []);
 
-				const debtsData = billsData.reduce((acc, item) => {
-					const itemDebt = calculateDebts(
-						item.payerPayments,
-						item.splitPayments,
-						item.rate,
-						item.actualExpenseCurrency,
-					);
+		const totalDebtsData = calculateTotalDebts(debtsData);
 
-					return [...acc, ...itemDebt];
-				}, []);
+		const membersData = groupData.groupMembersList;
 
-				const totalDebtsData = calculateTotalDebts(debtsData);
-
-				// 將 id 轉成姓名
-				const mapMemberIdToName = (memberId) => {
-					const member = membersData.find((member) => member.memberId === memberId);
-					return member ? member.memberName : memberId;
-				};
-
-				// 將 id 與人名配對顯示
-				const transformedDebtsData = totalDebtsData
-					.map((debt) => ({
-						debtor: mapMemberIdToName(debt.debtor),
-						creditor: mapMemberIdToName(debt.creditor),
-						amount: debt.amount,
-						currency: debt.currency,
-					}))
-					.sort((a, b) => a.debtor.localeCompare(b.debtor));
-
-				setLedgerData(transformedDebtsData);
-			} else {
-				window.alert('讀取資料錯誤');
-			}
-
-			setIsLoading(false);
+		// 將 id 轉成姓名
+		const mapMemberIdToName = (memberId) => {
+			const member = membersData.find((member) => member.memberId === memberId);
+			return member ? member.memberName : memberId;
 		};
 
-		fetchBillsData();
-	}, []);
+		// 將 id 與人名配對顯示
+		const transformedDebtsData = totalDebtsData
+			.map((debt) => ({
+				debtor: mapMemberIdToName(debt.debtor),
+				creditor: mapMemberIdToName(debt.creditor),
+				amount: debt.amount,
+				currency: debt.currency,
+			}))
+			.sort((a, b) => a.debtor.localeCompare(b.debtor));
+
+		setLedgerData(transformedDebtsData);
+	}, [groupId, groupData, billsCollection]);
 
 	// 對一筆 bill 的債務計算
 	function calculateDebts(creditorData, debtorData, rate, currency) {
@@ -158,7 +155,7 @@ function LedgerPage() {
 	}
 
 	function handleButtonClick() {
-		navigate(`/bill/${groupId}`);
+		navigate(`/bill/${groupIdentification}`);
 	}
 
 	return (
