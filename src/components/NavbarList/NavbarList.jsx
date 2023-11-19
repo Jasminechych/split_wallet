@@ -17,7 +17,9 @@ function NavbarList() {
 	];
 
 	function handleCopyLink() {
-		navigator.clipboard.writeText(`${process.env.PUBLIC_URL}/record/${groupIdentification}`);
+		navigator.clipboard.writeText(
+			`${process.env.REACT_APP_PUBLIC_URL}/record/${groupIdentification}`,
+		);
 		Swal.fire({
 			position: 'center',
 			icon: 'success',

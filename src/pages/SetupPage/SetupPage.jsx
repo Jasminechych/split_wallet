@@ -127,7 +127,7 @@ function SetupPage() {
 				confirmButtonText: '儲存連結',
 			}).then((result) => {
 				if (result.isConfirmed) {
-					navigator.clipboard.writeText(`${process.env.PUBLIC_URL}/record/${groupId}`);
+					navigator.clipboard.writeText(`${process.env.REACT_APP_PUBLIC_URL}/record/${groupId}`);
 					Swal.fire('已複製連結!', '', 'success');
 				}
 			});
