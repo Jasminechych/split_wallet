@@ -5,7 +5,6 @@ import { SetupPage, RecordPage, BillPage, LedgerPage } from 'src/pages';
 import { GroupInfoProvider } from 'src/contexts/GroupInfoContext';
 
 function App() {
-	console.log('process.env.PUBLIC_URL:', process.env.PUBLIC_URL);
 	return (
 		<div className='App'>
 			<BrowserRouter>
