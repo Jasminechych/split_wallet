@@ -8,7 +8,7 @@ function NavbarList() {
 	const navigate = useNavigate();
 
 	// context
-	const { groupIdentification, handleGroupIdentificationChange } = useGroupInfo();
+	const { groupIdentification, handleGroupIdentificationChange, groupData } = useGroupInfo();
 
 	const navbarList = [
 		{ key: `/record/${groupIdentification}`, value: '消費紀錄' },
@@ -31,6 +31,7 @@ function NavbarList() {
 
 	return (
 		<nav className={style.navbarList}>
+			<h5 className={style.groupName}>{groupData.groupName}</h5>
 			{navbarList.map(({ key, value }) => {
 				return (
 					<NavLink

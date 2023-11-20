@@ -5,9 +5,13 @@
 	align-items: center;
 	gap: 32px;
 	padding: 0 24px;
-	margin-top: 120px;
 	text-align: center;
 	overflow-x: scroll;
+}
+
+.groupName {
+	margin: 100px 0 40px 0;
+	color: var(--dark-90);
 }
 
 %naveItem {
