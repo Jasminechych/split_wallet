@@ -29,6 +29,11 @@ function NavbarList() {
 		});
 	}
 
+	function handleLogOut() {
+		handleGroupIdentificationChange('');
+		navigate('/');
+	}
+
 	return (
 		<nav className={style.navbarList}>
 			<h5 className={style.groupName}>{groupData.groupName}</h5>
@@ -45,13 +50,8 @@ function NavbarList() {
 			<p className={style.navItem} onClick={handleCopyLink}>
 				複製連結
 			</p>
-			<p
-				className={style.navItem}
-				onClick={() => {
-					handleGroupIdentificationChange('');
-					navigate('/');
-				}}>
-				建立群組
+			<p className={`${style.navItem} ${style.navItemLogOut}`} onClick={handleLogOut}>
+				建立新群組
 			</p>
 		</nav>
 	);
