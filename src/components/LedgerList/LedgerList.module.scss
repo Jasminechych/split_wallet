@@ -8,10 +8,10 @@
 }
 
 .ledgerItem {
-	display: flex;
-	justify-content: space-between;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr) auto;
 	align-items: center;
-	gap: 8px;
+	gap: 16px;
 	width: 100%;
 	height: 48px;
 	padding-left: 8px;
@@ -23,35 +23,27 @@
 		background-color: var(--dark-20);
 	}
 }
-
-.ledgerItemPersonWrapper {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	width: 100%;
-	white-space: nowrap;
-}
-
-.ledgerItemAmountWrapper {
-	display: flex;
-	justify-content: flex-end;
-	align-items: center;
-	gap: 16px;
-	width: 50%;
-	white-space: nowrap;
-}
-
-.ledgerItemDebtor,
-.ledgerItemCreditor {
-	width: 100%;
+.ledgerItemDebtor {
+	grid-column: 1 / 2;
 }
 
 .ledgerItemOwe {
-	width: 100%;
+	grid-column: 2 / 3;
 	color: var(--dark-90);
 }
 
+.ledgerItemCreditor {
+	grid-column: 3 / 4;
+}
+
+
+.ledgerItemAmount {
+	grid-column: 4 / 5;
+	text-align: right;
+}
+
 .ledgerItemCurrency {
+	grid-column: 5 / 6;
 	color: var(--dark-90);
 }
 
