@@ -74,22 +74,33 @@ function GroupInfoProvider({ children }) {
 
 	useEffect(() => {
 		const fetchGroupData = async () => {
-			if (!groupIdentification) return;
-
-			setIsLoading(true);
-
-			const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupIdentification);
-
-			if (successGetGroupInfo) {
+			if (!groupIdentification) {
 				setGroupData((prev) => ({
 					...prev,
-					groupName: groupInfo.groupName,
-					groupMembersList: groupInfo.groupMembersList,
-					localExpenseCurrency: groupInfo.localExpenseCurrency,
-					actualExpenseCurrency: groupInfo.actualExpenseCurrency,
+					groupName: '',
+					groupMembersList: [],
+					localExpenseCurrency: 'TWD',
+					actualExpenseCurrency: 'TWD',
 				}));
-			} else {
-				window.alert('讀取資料錯誤，請再試一次');
+
+				return;
+			}
+
+			setIsLoading(true);
+			try {
+				const { successGetGroupInfo, groupInfo } = await getGroupInfo(groupIdentification);
+
+				if (successGetGroupInfo) {
+					setGroupData((prev) => ({
+						...prev,
+						groupName: groupInfo.groupName,
+						groupMembersList: groupInfo.groupMembersList,
+						localExpenseCurrency: groupInfo.localExpenseCurrency,
+						actualExpenseCurrency: groupInfo.actualExpenseCurrency,
+					}));
+				}
+			} catch (e) {
+				console.log('fetchGroupData failed', e);
 			}
 
 			setIsLoading(false);
