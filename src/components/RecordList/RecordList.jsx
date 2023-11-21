@@ -3,7 +3,7 @@ import { RecordItem } from 'src/components/RecordItem/RecordItem';
 
 function RecordList({ data = [], handleUpdateRecord, handleDeleteRecord }) {
 	return (
-		<div className={style.expensesList}>
+		<div className={style.recordList}>
 			{data.length > 0 ? (
 				data.map((item) => (
 					<RecordItem
