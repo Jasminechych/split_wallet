@@ -1,15 +1,14 @@
 # Split Wallet
 
----
 ## 功能列表
----
+
 - 使用者可以建立群組、選擇消費貨幣及結算貨幣、新增群組成員後即可使用 split wallet 網站
 - 可於新增消費頁面新增一筆花費
 - 可於消費紀錄頁面查看所有花費
 - 可於結算紀錄頁面查看所有債務狀態
 
 ## Getting start
----
+
 #### Prerequisites - 環境建置
 
 1. [Node.js](https://nodejs.org/en/)
@@ -40,7 +39,7 @@ http://localhost:3000
 ```
 
 #### Built With - 使用工具
----
+
 - [Node.js](https://nodejs.org/en/) v16.18.1
 - [React](https://www.npmjs.com/package/react) v18.2.0- 應用程式架構
 - [react-router-dom](https://www.npmjs.com/package/react-router-dom) v6.17.0
@@ -50,5 +49,5 @@ http://localhost:3000
 - [uuid](https://www.npmjs.com/package/uuid) v9.0.1
 
 #### Contributor - 專案開發人員
----
+
 [Jasmine](https://github.com/Jasminechych)
