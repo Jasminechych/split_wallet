@@ -11,6 +11,7 @@
 ## Getting start
 
 #### Prerequisites - 環境建置
+___
 
 1. [Node.js](https://nodejs.org/en/)
 2. [npm](https://www.npmjs.com/)
