@@ -10,14 +10,13 @@
 
 ## Getting start
 
-#### Prerequisites - 環境建置
-___
+### Prerequisites - 環境建置
 
 1. [Node.js](https://nodejs.org/en/)
 2. [npm](https://www.npmjs.com/)
 3. [React](https://www.npmjs.com/package/react)
 
-#### Installing - 安裝流程
+### Installing - 安裝流程
 
 1.  打開 terminal，Clone 此專案至本機電腦
 ```
@@ -40,7 +39,7 @@ http://localhost:3000
 ctrl+c
 ```
 
-#### Built With - 使用工具
+### Built With - 開發工具
 
 - [Node.js](https://nodejs.org/en/) v16.18.1
 - [React](https://www.npmjs.com/package/react) v18.2.0
