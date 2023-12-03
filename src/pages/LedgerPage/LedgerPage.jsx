@@ -27,92 +27,83 @@ function LedgerPage() {
 			handleGroupIdentificationChange(groupId);
 		}
 
-		const debtsData = billsCollection.reduce((acc, item) => {
-			const itemDebt = calculateDebts(
-				item.payerPayments,
-				item.splitPayments,
-				item.rate,
-				item.actualExpenseCurrency,
-			);
-
-			return [...acc, ...itemDebt];
-		}, []);
-
-		const totalDebtsData = calculateTotalDebts(debtsData);
+		const ledgerDataWithId = calculateTotalBillsDebts(calculateBillDebts(billsCollection));
 
 		const membersData = groupData.groupMembersList;
 
-		// 將 id 轉成姓名
-		const mapMemberIdToName = (memberId) => {
-			const member = membersData.find((member) => member.memberId === memberId);
-			return member ? member.memberName : memberId;
-		};
-
 		// 將 id 與人名配對顯示
-		const transformedDebtsData = totalDebtsData
-			.map((debt) => ({
-				debtor: mapMemberIdToName(debt.debtor),
-				creditor: mapMemberIdToName(debt.creditor),
-				amount: debt.amount,
-				currency: debt.currency,
+		const ledgerDataWithMemberName = ledgerDataWithId
+			.map(({ debtor, creditor, amount, currency }) => ({
+				debtor: mapMemberIdToName(membersData, debtor),
+				creditor: mapMemberIdToName(membersData, creditor),
+				amount: amount,
+				currency: currency,
 			}))
 			.sort((a, b) => a.debtor.localeCompare(b.debtor));
 
-		setLedgerData(transformedDebtsData);
+		setLedgerData(ledgerDataWithMemberName);
 	}, [groupId, groupData, billsCollection]);
 
 	// 對一筆 bill 的債務計算
-	function calculateDebts(creditorData, debtorData, rate, currency) {
-		let debt = [];
+	function calculateBillDebts(dataArray) {
+		const debts = dataArray.reduce((acc, bill) => {
+			const {
+				payerPayments: creditorData,
+				splitPayments: debtorData,
+				rate,
+				actualExpenseCurrency: currency,
+			} = bill;
 
-		for (const creditorId in creditorData) {
-			for (const debtorId in debtorData) {
-				const debtorPayableAmount = Number(debtorData[debtorId].amount);
-				const debtorPaidAmount = Number(creditorData[debtorId].amount);
-				const creditorPayableAmount = Number(debtorData[creditorId].amount);
-				const creditorPaidAmount = Number(creditorData[creditorId].amount);
+			for (const creditorId in creditorData) {
+				for (const debtorId in debtorData) {
+					const debtorPayableAmount = Number(debtorData[debtorId].amount);
+					const debtorPaidAmount = Number(creditorData[debtorId].amount);
+					const creditorPayableAmount = Number(debtorData[creditorId].amount);
+					const creditorPaidAmount = Number(creditorData[creditorId].amount);
 
-				// 潛在債務人
-				const potentialDebtor =
-					debtorPayableAmount > 0 && debtorPayableAmount - debtorPaidAmount > 0;
+					// 潛在債務人
+					const potentialDebtor =
+						debtorPayableAmount > 0 && debtorPayableAmount - debtorPaidAmount > 0;
 
-				// 潛在債權人
-				const potentialCreditor = creditorPaidAmount - creditorPayableAmount > 0;
+					// 潛在債權人
+					const potentialCreditor = creditorPaidAmount - creditorPayableAmount > 0;
 
-				if (!potentialDebtor || !potentialCreditor || debtorId === creditorId) continue;
+					if (!potentialDebtor || !potentialCreditor || debtorId === creditorId) continue;
 
-				// 債務人債款
-				const debtorDebts = round(debtorPayableAmount - debtorPaidAmount, 2);
+					// 債務人債款
+					const debtorDebts = round(debtorPayableAmount - debtorPaidAmount, 2);
 
-				// 債權人債款
-				const creditorDebts = round(creditorPaidAmount - creditorPayableAmount, 2);
+					// 債權人債款
+					const creditorDebts = round(creditorPaidAmount - creditorPayableAmount, 2);
 
-				// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
-				if (Number(creditorDebts) >= Number(debtorDebts)) {
-					debt.push({
-						debtor: debtorId,
-						creditor: creditorId,
-						amount: round(Number(debtorDebts) / Number(rate), 2),
-						currency: currency,
-					});
-				} else {
-					// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
-					debt.push({
-						debtor: debtorId,
-						creditor: creditorId,
-						amount: round(Number(creditorDebts) / Number(rate), 2),
-						currency: currency,
-					});
+					// 債權人債款 >= 債務人債款，債務人債款 應全部給 債權人
+					if (Number(creditorDebts) >= Number(debtorDebts)) {
+						acc.push({
+							debtor: debtorId,
+							creditor: creditorId,
+							amount: round(Number(debtorDebts) / Number(rate), 2),
+							currency: currency,
+						});
+					} else {
+						// 債權人債款 < 債務人債款，債務人 只需補足 債權人債款
+						acc.push({
+							debtor: debtorId,
+							creditor: creditorId,
+							amount: round(Number(creditorDebts) / Number(rate), 2),
+							currency: currency,
+						});
+					}
 				}
 			}
-		}
+			return acc;
+		}, []);
 
-		return debt;
+		return debts;
 	}
 
 	// 對多筆 bill 的債務計算
-	function calculateTotalDebts(debtsData) {
-		const summedDebtsMap = debtsData.reduce((acc, debt) => {
+	function calculateTotalBillsDebts(dataArray) {
+		const summedDebtsMap = dataArray.reduce((acc, debt) => {
 			// key 紀錄 債務人、債權人、交易貨幣 的關係
 			const key1 = `${debt.debtor}_${debt.creditor}_${debt.currency}`;
 			const key2 = `${debt.creditor}_${debt.debtor}_${debt.currency}`;
@@ -152,6 +143,12 @@ function LedgerPage() {
 		});
 
 		return result;
+	}
+
+	// 將 id 轉成姓名
+	function mapMemberIdToName(membersData, memberId) {
+		const member = membersData.find((member) => member.memberId === memberId);
+		return member ? member.memberName : memberId;
 	}
 
 	function handleButtonClick() {
