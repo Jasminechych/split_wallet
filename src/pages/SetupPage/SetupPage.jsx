@@ -104,14 +104,14 @@ function SetupPage() {
 			handleErrors('groupName', '群組名稱不得超過 20 字');
 		}
 
-		if (!groupData.groupMembersList.length) {
-			handleErrors('groupMember', '請至少輸入一位群組成員');
+		if (groupData.groupMembersList.length < 2) {
+			handleErrors('groupMember', '請至少輸入兩位群組成員');
 		}
 
 		if (
 			groupData.groupName === '' ||
 			groupData.groupName.length > 20 ||
-			!groupData.groupMembersList.length
+			groupData.groupMembersList.length < 2
 		)
 			return;
 
