@@ -17,7 +17,7 @@ function LedgerList({ data = [] }) {
 					);
 				})
 			) : (
-				<h4 className={style.emptyContent}>。。。 還沒有債務紀錄喔 。。。</h4>
+				<h4 className={style.emptyContent}>。。。 尚無需進行費用分擔的情況 。。。</h4>
 			)}
 		</div>
 	);
