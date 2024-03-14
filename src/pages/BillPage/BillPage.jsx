@@ -40,6 +40,16 @@ function BillPage() {
 	});
 
 	const [memberData, setMemberData] = useState([]);
+	const [file, setFile] = useState(null);
+
+	// const previewUrl = file
+	// 	? file : URL.createObjectURL(file) ?
+	// 	: 'https://react.semantic-ui.com/images/wireframe/image.png';
+	const previewUrl =
+		file && typeof file === 'string'
+			? file
+			: (file instanceof File && URL.createObjectURL(file)) ||
+			  'https://react.semantic-ui.com/images/wireframe/image.png';
 
 	// 紀錄當前 選到的 payer & split members
 	const selectedSplitMemberRef = useRef([]);
@@ -90,6 +100,7 @@ function BillPage() {
 						payerPayments: data.payerPayments,
 						splitPayments: data.splitPayments,
 					}));
+					setFile(data.imageUrl);
 
 					selectedSplitMemberRef.current = Object.keys(data.splitPayments).filter(
 						(key) => data.splitPayments[key].isSelected,
@@ -334,12 +345,12 @@ function BillPage() {
 		clearErrors('splitPayments');
 	}
 
-	function handleButtonClick(action) {
+	async function handleButtonClick(action) {
 		if (!checkIsValidInputAndErrorsHandler()) return;
 
 		// 新增資料
 		if (action === 'add') {
-			const success = createBill(groupIdentification, billData);
+			const success = await createBill(groupIdentification, billData, file);
 
 			if (success) {
 				Swal.fire({
@@ -349,6 +360,7 @@ function BillPage() {
 					showConfirmButton: false,
 					timer: 1000,
 				});
+				setIsLoading(false);
 				navigate(`/record/${groupIdentification}`);
 			} else {
 				Swal.fire({
@@ -358,13 +370,15 @@ function BillPage() {
 					showConfirmButton: false,
 					timer: 1000,
 				});
+				setIsLoading(false);
+				navigate(`/record/${groupIdentification}`);
 			}
 			return;
 		}
 
 		// 更新資料
 		if (action === 'update') {
-			const success = updateBillData(groupIdentification, billId, billData);
+			const { success } = await updateBillData(groupIdentification, billId, billData, file);
 
 			if (success) {
 				Swal.fire({
@@ -387,6 +401,10 @@ function BillPage() {
 			}
 			return;
 		}
+	}
+
+	function handleFileChange(value) {
+		setFile(value);
 	}
 
 	function calculateUnSettledAmount(data) {
@@ -629,6 +647,19 @@ function BillPage() {
 							unSettledAmount={splitPaymentsUnSettledAmount}
 						/>
 					</Select>
+					<div className={style.imageGroup}>
+						<label htmlFor='billImage' className={style.imageLabel}>
+							上傳圖片
+							<p className={style.imageButton}>選擇檔案</p>
+							<img src={previewUrl} className={style.image} />
+						</label>
+						<input
+							id='billImage'
+							type='file'
+							className={style.imageInput}
+							onChange={(e) => handleFileChange(e.target.files[0])}
+						/>
+					</div>
 				</div>
 			)}
 		</PageTemplate>

@@ -1,7 +1,7 @@
 .billPage {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
-  height: 100%;
+	height: 100%;
 	row-gap: 32px;
 }
 
@@ -12,8 +12,41 @@
 .rate,
 .payer,
 .split,
-.expenseDistribution {
+.expenseDistribution,
+.imageGroup {
 	grid-column: 1 / 3;
+}
+
+.imageLabel {
+	padding-left: 8px;
+	margin-bottom: 8px;
+	color: var(--dark-90);
+}
+
+.imageButton {
+	width: 100%;
+	height: 40px;
+	margin-top: 8px;
+	text-align: center;
+	line-height: 40px;
+	border: var(--border-bottom-primary);
+	border-radius: 4px;
+	cursor: pointer;
+	background-color: var(--dark-20);
+
+	&:hover {
+		background-color: var(--dark-30);
+	}
+}
+
+.image {
+	width: 100%;
+	margin-top: 8px;
+	cursor: pointer;
+}
+
+.imageInput {
+	display: none;
 }
 
 @media screen and (min-width: 992px) {
@@ -25,14 +58,16 @@
 	.localExpense,
 	.rate,
 	.payer,
-	.expenseDistributionForPayer {
+	.expenseDistributionForPayer,
+	.imageGroup {
 		grid-column: 1 / 2;
 	}
 
 	.billTitle,
 	.actualExpense,
 	.split,
-	.expenseDistributionForSplit {
+	.expenseDistributionForSplit,
+	.image {
 		grid-column: 2 / 3;
 	}
 }

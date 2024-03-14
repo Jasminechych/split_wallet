@@ -1,5 +1,8 @@
 import db from 'src/libraries/utils/firebase';
 import { collection, addDoc, doc, getDoc, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+
+const storage = getStorage();
 
 const addGroup = async (dataObj) => {
 	try {
@@ -27,11 +30,21 @@ const getGroupInfo = async (groupId) => {
 	}
 };
 
-const addBill = async (groupId, dataObj) => {
+const addBill = async (groupId, dataObj, file) => {
 	try {
 		const groupRef = doc(db, 'group', groupId);
 		const billsCollectionRef = collection(groupRef, 'bills');
-		await addDoc(billsCollectionRef, dataObj);
+		const billDocRef = await addDoc(billsCollectionRef, dataObj);
+
+		if (file) {
+			const fileRef = ref(storage, 'bill-images/' + billDocRef.id);
+			const metadata = {
+				contentType: file.type,
+			};
+			await uploadBytes(fileRef, file, metadata);
+			const imageUrl = await getDownloadURL(fileRef);
+			await updateDoc(billDocRef, { ...dataObj, imageUrl });
+		}
 
 		return { successAddBill: true };
 	} catch (e) {
@@ -84,6 +97,12 @@ const deleteBill = async (groupId, billId) => {
 		const billDocRef = doc(groupRef, 'bills', billId);
 		await deleteDoc(billDocRef);
 
+		const desertRef = ref(storage, `bill-images/${billId}`);
+
+		if (desertRef.isRoot) {
+			await deleteObject(desertRef);
+		}
+
 		return { successDeleteBill: true };
 	} catch (e) {
 		console.error('Error deleting bill data:', e);
@@ -92,10 +111,21 @@ const deleteBill = async (groupId, billId) => {
 	}
 };
 
-const updateBill = async (groupId, billId, dataObj) => {
+const updateBill = async (groupId, billId, dataObj, file) => {
 	try {
 		const groupRef = doc(db, 'group', groupId);
 		const billDocRef = doc(groupRef, 'bills', billId);
+
+		if (file) {
+			const fileRef = ref(storage, 'bill-images/' + billDocRef.id);
+			const metadata = {
+				contentType: file.type,
+			};
+			await uploadBytes(fileRef, file, metadata);
+			const imageUrl = await getDownloadURL(fileRef);
+			await updateDoc(billDocRef, { ...dataObj, imageUrl });
+		}
+
 		await updateDoc(billDocRef, dataObj);
 
 		return { successUpdateBill: true };

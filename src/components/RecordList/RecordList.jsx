@@ -13,6 +13,14 @@ function RecordList({ data = [], handleUpdateRecord, handleDeleteRecord }) {
 							id={item.id}
 							title={item.billTitle}
 							date={item.billDate}
+							actualExpense={item.actualExpense}
+							actualExpenseCurrency={item.actualExpenseCurrency}
+							localExpense={item.localExpense}
+							localExpenseCurrency={item.localExpenseCurrency}
+							payerPayments={item.payerPayments}
+							splitPayments={item.splitPayments}
+							rate={item.rate}
+							image={item.imageUrl}
 							handleUpdateRecord={(id) => handleUpdateRecord(id)}
 							handleDeleteRecord={(id) => handleDeleteRecord(id)}
 						/>

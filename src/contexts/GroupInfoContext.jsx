@@ -20,34 +20,42 @@ function GroupInfoProvider({ children }) {
 	}, []);
 
 	const createBill = useCallback(
-		async (groupId, billData) => {
-			setIsLoading(true);
+		async (groupId, billData, imageUrl) => {
 			try {
-				const { successAddBill } = await addBill(groupId, billData);
+				setIsLoading(true);
+
+				const { successAddBill } = await addBill(groupId, billData, imageUrl);
+				if (successAddBill) {
+					setBillAction(!billAction);
+					setIsLoading(false);
+					return { success: true };
+				}
 				setBillAction(!billAction);
-				setIsLoading(false);
-				return successAddBill;
 			} catch (e) {
 				console.log('createBill failed: ', e);
+				setBillAction(!billAction);
 				setIsLoading(false);
+
+				return { success: false };
 			}
 		},
 		[billAction],
 	);
 
 	const updateBillData = useCallback(
-		async (groupId, billId, billData) => {
+		async (groupId, billId, billData, imageUrl) => {
 			setIsLoading(true);
 			try {
-				const { successUpdateBill } = await updateBill(groupId, billId, billData);
+				const { successUpdateBill } = await updateBill(groupId, billId, billData, imageUrl);
 				if (successUpdateBill) {
 					setBillAction(!billAction);
 					setIsLoading(false);
-					return successUpdateBill;
+					return { success: true };
 				}
 			} catch (e) {
 				console.log('updateBillData failed: ', e);
 				setIsLoading(false);
+				return { success: false };
 			}
 		},
 		[billAction],
@@ -62,8 +70,8 @@ function GroupInfoProvider({ children }) {
 				const { successGetBills, billsData } = await getBills(groupIdentification);
 				if (successGetBills) {
 					setBillsCollection(billsData);
+					setIsLoading(false);
 				}
-				setIsLoading(false);
 			} catch (e) {
 				console.log('fetchBills failed', e);
 				setIsLoading(true);
