@@ -53,9 +53,21 @@ function RecordPage() {
 					setBillsCollection((prev) => {
 						return prev.filter((item) => item.id !== billId);
 					});
-					Swal.fire('刪除成功!', '', 'success');
+					Swal.fire({
+						position: 'center',
+						icon: 'success',
+						title: '刪除成功',
+						showConfirmButton: false,
+						timer: 1000,
+					});
 				} else {
-					Swal.fire('刪除失敗!', '', 'error');
+					Swal.fire({
+						position: 'center',
+						icon: 'error',
+						title: '刪除失敗，請稍後再試',
+						showConfirmButton: false,
+						timer: 1000,
+					});
 				}
 			} else if (result.isDenied) {
 				Swal.fire('取消刪除', '', 'info');
