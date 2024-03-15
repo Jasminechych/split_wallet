@@ -116,7 +116,7 @@ const updateBill = async (groupId, billId, dataObj, file) => {
 		const groupRef = doc(db, 'group', groupId);
 		const billDocRef = doc(groupRef, 'bills', billId);
 
-		if (file) {
+		if (file.type) {
 			const fileRef = ref(storage, 'bill-images/' + billDocRef.id);
 			const metadata = {
 				contentType: file.type,
@@ -124,9 +124,9 @@ const updateBill = async (groupId, billId, dataObj, file) => {
 			await uploadBytes(fileRef, file, metadata);
 			const imageUrl = await getDownloadURL(fileRef);
 			await updateDoc(billDocRef, { ...dataObj, imageUrl });
+		} else {
+			await updateDoc(billDocRef, dataObj);
 		}
-
-		await updateDoc(billDocRef, dataObj);
 
 		return { successUpdateBill: true };
 	} catch (e) {
