@@ -49,6 +49,18 @@
 	display: none;
 }
 
+.suffixButton {
+	all: unset;
+	width: 90px;
+	height: 100%;
+	border: var(--border-bottom-primary);
+	border-bottom: none;
+	border-radius: 2px 2px 0 0;
+	font-size: 14px;
+	text-align: center;
+	cursor: pointer;
+}
+
 @media screen and (min-width: 992px) {
 	.billPage {
 		column-gap: 24px;

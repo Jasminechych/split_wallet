@@ -13,6 +13,7 @@ import { Loading } from 'src/assets/icons';
 import Swal from 'sweetalert2';
 import { useGroupInfo } from 'src/contexts/GroupInfoContext';
 import { getBill } from 'src/apis/apis';
+import { getRate } from 'src/apis/rate_api';
 
 const payerOptionsData = [
 	{ key: 'single', value: '單人付款' },
@@ -264,7 +265,7 @@ function BillPage() {
 		if (Number(billData.localExpense) !== 0 && Number(value) !== 0) {
 			setBillData((prev) => ({
 				...prev,
-				actualExpense: round(Number(billData.localExpense) / Number(value), 2),
+				actualExpense: round(Number(billData.localExpense) * Number(value), 2),
 			}));
 
 			// 清除錯誤訊息
@@ -541,6 +542,23 @@ function BillPage() {
 		return true;
 	}
 
+	async function handleGetRateClick(baseCurrency) {
+		try {
+			const response = await getRate(baseCurrency);
+			const requiredCurrency = billData.actualExpenseCurrency;
+			const rate = response[requiredCurrency];
+			handleRateChange(rate);
+		} catch {
+			Swal.fire({
+				position: 'center',
+				icon: 'error',
+				title: '取得匯率失敗，請稍後再試',
+				showConfirmButton: false,
+				timer: 1000,
+			});
+		}
+	}
+
 	return (
 		<PageTemplate
 			pageTitle={billId ? '修改消費' : '新增消費'}
@@ -606,11 +624,19 @@ function BillPage() {
 						className={style.rate}
 						title='匯率 (與實際金額擇一填寫)'
 						type='number'
-						placeholder='請輸入匯率'
+						placeholder='請輸入匯率或點擊取得匯率'
 						value={billData.rate}
 						onChange={(e) => handleRateChange(e.target.value)}
 						error={errors.rate}
+						suffix={
+							<button
+								className={style.suffixButton}
+								onClick={() => handleGetRateClick(billData.localExpenseCurrency)}>
+								取得匯率
+							</button>
+						}
 					/>
+
 					<Select
 						className={style.payer}
 						title='誰付錢'

@@ -81,7 +81,7 @@ function LedgerPage() {
 						acc.push({
 							debtor: debtorId,
 							creditor: creditorId,
-							amount: round(Number(debtorDebts) / Number(rate), 2),
+							amount: round(Number(debtorDebts) * Number(rate), 2),
 							currency: currency,
 						});
 					} else {
@@ -89,7 +89,7 @@ function LedgerPage() {
 						acc.push({
 							debtor: debtorId,
 							creditor: creditorId,
-							amount: round(Number(creditorDebts) / Number(rate), 2),
+							amount: round(Number(creditorDebts) * Number(rate), 2),
 							currency: currency,
 						});
 					}
