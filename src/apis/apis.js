@@ -116,7 +116,7 @@ const updateBill = async (groupId, billId, dataObj, file) => {
 		const groupRef = doc(db, 'group', groupId);
 		const billDocRef = doc(groupRef, 'bills', billId);
 
-		if (file.type) {
+		if (file) {
 			const fileRef = ref(storage, 'bill-images/' + billDocRef.id);
 			const metadata = {
 				contentType: file.type,

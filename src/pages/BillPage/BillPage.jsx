@@ -43,11 +43,15 @@ function BillPage() {
 	const [memberData, setMemberData] = useState([]);
 	const [file, setFile] = useState(null);
 
-	const previewUrl =
-		file && typeof file === 'string'
-			? file
-			: (file instanceof File && URL.createObjectURL(file)) ||
-			  'https://react.semantic-ui.com/images/wireframe/image.png';
+	let previewUrl = 'https://react.semantic-ui.com/images/wireframe/image.png';
+
+	if (file) {
+		if (typeof file === 'string') {
+			previewUrl = file;
+		} else if (file instanceof File) {
+			previewUrl = URL.createObjectURL(file);
+		}
+	}
 
 	// 紀錄當前 選到的 payer & split members
 	const selectedSplitMemberRef = useRef([]);
