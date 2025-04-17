@@ -1,10 +1,16 @@
 import 'src/style/reset.css';
 import 'src/style/base.scss';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { anonymousLogin } from 'src/apis/apis';
 import { SetupPage, RecordPage, BillPage, LedgerPage } from 'src/pages';
 import { GroupInfoProvider } from 'src/contexts/GroupInfoContext';
 
 function App() {
+	useEffect(() => {
+		anonymousLogin();
+	}, []);
+
 	return (
 		<div className='App'>
 			<BrowserRouter>

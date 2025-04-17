@@ -1,8 +1,19 @@
 import db from 'src/libraries/utils/firebase';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import { collection, addDoc, doc, getDoc, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 const storage = getStorage();
+
+const anonymousLogin = async () => {
+	const auth = getAuth();
+	try {
+		await signInAnonymously(auth);
+		console.log('匿名登入成功');
+	} catch (error) {
+		console.error('匿名登入失敗', error);
+	}
+};
 
 const addGroup = async (dataObj) => {
 	try {
@@ -136,4 +147,13 @@ const updateBill = async (groupId, billId, dataObj, file) => {
 	}
 };
 
-export { addGroup, getGroupInfo, addBill, getBill, getBills, deleteBill, updateBill };
+export {
+	anonymousLogin,
+	addGroup,
+	getGroupInfo,
+	addBill,
+	getBill,
+	getBills,
+	deleteBill,
+	updateBill,
+};
